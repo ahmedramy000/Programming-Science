@@ -29,7 +29,7 @@ function pack(sdp, kind, pid){
   if(!u || !p || !f) throw new Error('bad sdp');
   let c = [...sdp.matchAll(/a=candidate:\S+ \d+ udp \d+ (\S+) (\d+) typ host/g)].map(m=>m[1]+'/'+m[2]);
   c = [...new Set(c)];
-  c = c.filter(x=>!x.includes(':')).concat(c.filter(x=>x.includes(':'))).slice(0,4);
+  c = c.filter(x=>!x.includes(':')).concat(c.filter(x=>x.includes(':'))).slice(0,2);
   if(!c.length) throw new Error('no candidates');
   return ['Z1', kind, pid, u, p, hex2b64(f), c.join(',')].join('~');
 }
@@ -427,22 +427,26 @@ const VIEWS = {
     return `<div class="card">
       <b>الانضمام لغرفة</b>
       <p style="margin:8px 0; color:var(--ink-dim); font-size:12.5px;">${nameField().replace('class="lan-input"','class="lan-input" style="margin-bottom:10px"')}</p>
-      <ol class="lan-steps"><li>امسح الـQR اللي على جهاز صاحب الغرفة، أو الصق الكود اللي بعته.</li></ol>
-      <textarea id="lanCodeIn" class="lan-code" placeholder="الصق كود الغرفة هنا"></textarea>
-      <div class="nav-btns" style="margin-top:8px;">
-        <button class="btn btn-ghost" onclick="ZLAN.scanJoin()">📷 مسح QR</button>
-        <button class="btn btn-primary" onclick="ZLAN.doJoin()">ربط ✓</button>
-      </div>
+      <ol class="lan-steps"><li>امسح الـQR اللي على جهاز صاحب الغرفة.</li></ol>
+      <div class="nav-btns"><button class="btn btn-primary" onclick="ZLAN.scanJoin()">📷 امسح كود الغرفة</button></div>
+      <details class="lan-fallback">
+        <summary>مش قادر تمسح الكود؟</summary>
+        <textarea id="lanCodeIn" class="lan-code" placeholder="الصق كود الغرفة هنا"></textarea>
+        <div class="nav-btns" style="margin-top:8px;"><button class="btn btn-ghost" onclick="ZLAN.doJoin()">ربط ✓</button></div>
+      </details>
     </div>
     <div class="nav-btns">${back('home')}</div>`;
   },
   joinAnswer(){
     return `<div class="card">
       <b>كود الرد</b>
-      <p style="margin:8px 0; color:var(--ink-dim); font-size:12.5px; line-height:1.8;">وري الـQR ده لصاحب الغرفة عشان يمسحه (أو ابعتله الكود). الاتصال هيتم لوحده بعد كده.</p>
+      <p style="margin:8px 0; color:var(--ink-dim); font-size:12.5px; line-height:1.8;">وري الـQR ده لصاحب الغرفة عشان يمسحه بزرار "مسح QR الرد" عنده. الاتصال هيتم لوحده بعد كده.</p>
       <canvas id="lanQR" class="lan-qr"></canvas>
-      <textarea id="lanAnsOut" class="lan-code" readonly>${esc(R.vd||'')}</textarea>
-      <div class="nav-btns" style="margin-top:8px;"><button class="btn btn-ghost" onclick="ZLAN.copy('lanAnsOut')">📋 نسخ الكود</button></div>
+      <details class="lan-fallback">
+        <summary>مش قادر يمسحه؟ انسخ الكود بدل كده</summary>
+        <textarea id="lanAnsOut" class="lan-code" readonly>${esc(R.vd||'')}</textarea>
+        <div class="nav-btns" style="margin-top:8px;"><button class="btn btn-ghost" onclick="ZLAN.copy('lanAnsOut')">📋 نسخ الكود</button></div>
+      </details>
       <p style="margin:10px 0 0; color:var(--ink-dim); font-size:12px;">⏳ مستني صاحب الغرفة يربط…</p>
     </div>
     <div class="nav-btns">${back('home','إلغاء')}</div>`;
@@ -582,14 +586,17 @@ async function paintPair(){
     const peer = await hostInvite();
     const box = $('lanPairBox'); if(!box || R.view !== 'hostAdd') return;
     box.innerHTML = `<canvas id="lanQR" class="lan-qr"></canvas>
-      <textarea id="lanOfferOut" class="lan-code" readonly>${esc(peer.code)}</textarea>
-      <div class="nav-btns" style="margin:8px 0 14px;"><button class="btn btn-ghost" onclick="ZLAN.copy('lanOfferOut')">📋 نسخ الكود</button></div>
-      <b style="font-size:13px;">كود رد الجهاز التاني</b>
-      <textarea id="lanAnsIn" class="lan-code" placeholder="الصق كود الرد هنا" style="margin-top:6px;"></textarea>
-      <div class="nav-btns" style="margin-top:8px;">
-        <button class="btn btn-ghost" onclick="ZLAN.scanAnswer()">📷 مسح QR الرد</button>
-        <button class="btn btn-primary" onclick="ZLAN.acceptAnswer()">ربط ✓</button>
-      </div>`;
+      <details class="lan-fallback">
+        <summary>مش قادر الجهاز التاني يمسح الكود؟</summary>
+        <textarea id="lanOfferOut" class="lan-code" readonly>${esc(peer.code)}</textarea>
+        <div class="nav-btns" style="margin-top:8px;"><button class="btn btn-ghost" onclick="ZLAN.copy('lanOfferOut')">📋 نسخ الكود</button></div>
+      </details>
+      <div class="nav-btns" style="margin-top:14px;"><button class="btn btn-primary" onclick="ZLAN.scanAnswer()">📷 امسح كود الرد من الجهاز التاني</button></div>
+      <details class="lan-fallback">
+        <summary>هو بعتلك الكود مكتوب بدل كده؟</summary>
+        <textarea id="lanAnsIn" class="lan-code" placeholder="الصق كود الرد هنا" style="margin-top:6px;"></textarea>
+        <div class="nav-btns" style="margin-top:8px;"><button class="btn btn-primary" onclick="ZLAN.acceptAnswer()">ربط ✓</button></div>
+      </details>`;
     drawQR('lanQR', peer.code);
   }catch(e){ const box = $('lanPairBox'); if(box) box.innerHTML = '<p style="color:var(--accent-3);">مقدرتش أجهّز الكود. اتأكد إنك على شبكة واي فاي وجرّب تاني.</p>'; }
 }

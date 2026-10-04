@@ -18,7 +18,7 @@ function pack(sdp, kind){
   if(!u || !p || !f) throw new Error('bad sdp');
   let c = [...sdp.matchAll(/a=candidate:\S+ \d+ udp \d+ (\S+) (\d+) typ host/g)].map(m=>m[1]+'/'+m[2]);
   c = [...new Set(c)];
-  c = c.filter(x=>!x.includes(':')).concat(c.filter(x=>x.includes(':'))).slice(0,4);
+  c = c.filter(x=>!x.includes(':')).concat(c.filter(x=>x.includes(':'))).slice(0,2);
   if(!c.length) throw new Error('no candidates');
   return ['ZS1', kind, u, p, hex2b64(f), c.join(',')].join('~');
 }
@@ -181,37 +181,44 @@ const VIEWS = {
   wait(){
     return `<div class="card">
       <b>كود المزامنة</b>
-      <p style="margin:8px 0; color:var(--ink-dim); font-size:12.5px; line-height:1.8;">وري الـQR للجهاز التاني يمسحه (أو ابعتله الكود)، وبعدين الصق كود الرد اللي هيطلعله هنا تحت.</p>
+      <p style="margin:8px 0; color:var(--ink-dim); font-size:12.5px; line-height:1.8;">وري الـQR للجهاز التاني يمسحه، وبعدين امسح كود الرد اللي هيطلعله بنفس الطريقة.</p>
       <canvas id="syncQR" class="lan-qr"></canvas>
-      <textarea id="syncOfferOut" class="lan-code" readonly>${esc(S.vd||'')}</textarea>
-      <div class="nav-btns" style="margin:8px 0 14px;"><button class="btn btn-ghost" onclick="ZSYNC.copy('syncOfferOut')">📋 نسخ الكود</button></div>
-      <b style="font-size:13px;">كود رد الجهاز التاني</b>
-      <textarea id="syncAnsIn" class="lan-code" placeholder="الصق كود الرد هنا" style="margin-top:6px;"></textarea>
-      <div class="nav-btns" style="margin-top:8px;">
-        <button class="btn btn-ghost" onclick="ZSYNC.scanAnswer()">📷 مسح QR الرد</button>
-        <button class="btn btn-primary" onclick="ZSYNC.acceptAnswer()">ربط ✓</button>
-      </div>
+      <details class="lan-fallback">
+        <summary>مش قادر الجهاز التاني يمسح الكود؟</summary>
+        <textarea id="syncOfferOut" class="lan-code" readonly>${esc(S.vd||'')}</textarea>
+        <div class="nav-btns" style="margin-top:8px;"><button class="btn btn-ghost" onclick="ZSYNC.copy('syncOfferOut')">📋 نسخ الكود</button></div>
+      </details>
+      <div class="nav-btns" style="margin-top:14px;"><button class="btn btn-primary" onclick="ZSYNC.scanAnswer()">📷 امسح كود الرد من الجهاز التاني</button></div>
+      <details class="lan-fallback">
+        <summary>هو بعتلك الكود مكتوب بدل كده؟</summary>
+        <textarea id="syncAnsIn" class="lan-code" placeholder="الصق كود الرد هنا" style="margin-top:6px;"></textarea>
+        <div class="nav-btns" style="margin-top:8px;"><button class="btn btn-primary" onclick="ZSYNC.acceptAnswer()">ربط ✓</button></div>
+      </details>
     </div>
     <div class="nav-btns">${back('إلغاء')}</div>`;
   },
   join(){
     return `<div class="card">
       <b>الاتصال بالجهاز الأول</b>
-      <textarea id="syncCodeIn" class="lan-code" placeholder="الصق كود الجهاز الأول هنا"></textarea>
-      <div class="nav-btns" style="margin-top:8px;">
-        <button class="btn btn-ghost" onclick="ZSYNC.scanJoin()">📷 مسح QR</button>
-        <button class="btn btn-primary" onclick="ZSYNC.doJoin()">التالي ▶</button>
-      </div>
+      <div class="nav-btns"><button class="btn btn-primary" onclick="ZSYNC.scanJoin()">📷 امسح كود الجهاز الأول</button></div>
+      <details class="lan-fallback">
+        <summary>مش قادر تمسح الكود؟</summary>
+        <textarea id="syncCodeIn" class="lan-code" placeholder="الصق كود الجهاز الأول هنا"></textarea>
+        <div class="nav-btns" style="margin-top:8px;"><button class="btn btn-ghost" onclick="ZSYNC.doJoin()">التالي ▶</button></div>
+      </details>
     </div>
     <div class="nav-btns">${back('إلغاء')}</div>`;
   },
   joinAnswer(){
     return `<div class="card">
       <b>كود الرد</b>
-      <p style="margin:8px 0; color:var(--ink-dim); font-size:12.5px;">وري الـQR ده للجهاز الأول أو ابعتله الكود.</p>
+      <p style="margin:8px 0; color:var(--ink-dim); font-size:12.5px;">وري الـQR ده للجهاز الأول عشان يمسحه بزرار "مسح QR الرد" عنده.</p>
       <canvas id="syncQR" class="lan-qr"></canvas>
-      <textarea id="syncAnsOut" class="lan-code" readonly>${esc(S.vd||'')}</textarea>
-      <div class="nav-btns" style="margin-top:8px;"><button class="btn btn-ghost" onclick="ZSYNC.copy('syncAnsOut')">📋 نسخ الكود</button></div>
+      <details class="lan-fallback">
+        <summary>مش قادر يمسحه؟ انسخ الكود بدل كده</summary>
+        <textarea id="syncAnsOut" class="lan-code" readonly>${esc(S.vd||'')}</textarea>
+        <div class="nav-btns" style="margin-top:8px;"><button class="btn btn-ghost" onclick="ZSYNC.copy('syncAnsOut')">📋 نسخ الكود</button></div>
+      </details>
       <p style="margin:10px 0 0; color:var(--ink-dim); font-size:12px;">⏳ مستني الجهاز الأول يربط…</p>
     </div>
     <div class="nav-btns">${back('إلغاء')}</div>`;

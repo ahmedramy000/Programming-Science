@@ -2065,6 +2065,10 @@ links:{tiktok:"", youtube:"", facebook:"", zoom:"", googleMeet:""},
 //  📝 الامتحانات الشاملة النهائية — 5 امتحانات × 100 سؤال، تغطي الوحدات الـ13 كاملة
 //  هذه امتحانات أصعب من اختبارات الوحدات، مصممة كمراجعة نهائية شاملة للمنهج كله.
 // ============================================================================
+// 🔒 قفل مؤقت للامتحانات الخمسة (الصف الأول الثانوي) — غيّرها لـ true وانت لسه بتراجع أو تعدّل
+// في محتوى الوحدات، فتتقفل الامتحانات تلقائيًا (بنفس شكل قفل امتحانات البكالوريا) وأي نتيجة
+// محفوظة فيها عند أي طالب بتتصفّر لحد ما ترجّعها false تاني بعد ما توحدات كلها تخلص مراجعة.
+const FINAL_EXAMS_LOCKED = true;
 const FINAL_EXAMS = [
   {
     id: 1,
@@ -2610,9 +2614,20 @@ const BAC2_CURRICULUM_COMPLETE = false;
 const BAC2_EXAMS = [
   // نفس شكل FINAL_EXAMS بالظبط: { id:1, title:"...", questions:[...] } — يُضاف لاحقًا مع محتوى الصف.
 ];
+
+// ============================================================================
+//  🧒 الصف الثالث الإعدادي — المكان جاهز ومجهّز بالكامل، فاضي لحد ما يتضاف المحتوى.
+//  نفس شكل UNITS بالظبط لوحدات هذا الصف (استخدم أرقام id من 200 فما فوق عشان متتعارضش
+//  مع UNITS العادية 1-13 ولا BAC2_UNITS اللي بتستخدم 100+)، ونفس شكل FINAL_EXAMS للامتحانات.
+// ============================================================================
+const PREP3_UNITS = [];
+const PREP3_EXAMS = [];
 function certScope(){
   if(typeof STATE !== 'undefined' && STATE.currentGrade === '2bac'){
     return { units: BAC2_UNITS, exams: BAC2_EXAMS, gradeLabel: (typeof GRADE_NAMES!=='undefined' && GRADE_NAMES['2bac']) || 'الصف الثاني بكالوريا' };
+  }
+  if(typeof STATE !== 'undefined' && STATE.currentGrade === '3prep'){
+    return { units: PREP3_UNITS, exams: PREP3_EXAMS, gradeLabel: (typeof GRADE_NAMES!=='undefined' && GRADE_NAMES['3prep']) || 'الصف الثالث الإعدادي' };
   }
   return { units: UNITS, exams: FINAL_EXAMS, gradeLabel: (typeof GRADE_NAMES!=='undefined' && GRADE_NAMES['1sec']) || 'الصف الأول الثانوي' };
 }

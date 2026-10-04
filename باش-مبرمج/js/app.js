@@ -6,7 +6,19 @@
 // 🔔 رقم إصدار المنصة — غيّر القيمة دي لأي رقم جديد (مثلاً "1.1.0") في كل مرة تعمل فيها
 // تحديث حقيقي على المنصة (دروس/أسئلة/فيتشرز جديدة). كل طالب فتح المنصة قبل كده هيشوف
 // تنبيه صوتي تلقائي بوجود تحديث، وهيتشجّع ياخد نسخة احتياطية من تقدمه قبل ما يكمل.
-const APP_VERSION = "1.15.0";
+const APP_VERSION = "1.16.0";
+
+// 📋 سجلّ التحديثات — كل مرة تزوّد رقم APP_VERSION فوق، ضيف سطر هنا بنفس رقم الإصدار يوضّح
+// إيه الجديد. القائمة دي بتظهر تلقائيًا جوه نافذة "في تحديث جديد" لكل طالب لسه مشافهاش.
+const CHANGELOG = {
+  "1.16.0": [
+    "🔐 نسخ احتياطية مُشفّرة — مينفعش حد يتلاعب فيها",
+    "🔄 مزامنة تقدّمك بين جهازين من غير إنترنت",
+    "👥 غرفة مذاكرة جماعية: مسابقات ومشاركة دروس بدون نت",
+    "🔒 الامتحانات الشاملة مقفولة مؤقتًا لحد ما المراجعة تخلص",
+    "📙 مكان جاهز للصف الثالث الإعدادي وقسم التقييمات"
+  ]
+};
 
 // 💬 رابط جروب الواتساب الرسمي — غيّره من هنا لو عملت جروب جديد لاحقًا
 const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/J8aima2bxNU7gHRHBp3B45";
@@ -21,6 +33,7 @@ const PASS_THRESHOLD  = 0.7;    // نسبة النجاح المطلوبة لفت
 // ما تحدد تاريخ.
 const UNLOCK_DATE_TERM2 = null;   // مثال: "2026-02-01T00:00:00"
 const UNLOCK_DATE_BAC2  = "2020-01-01T00:00:00";   // مفتوح الآن — غيّره لتاريخ مستقبلي لو عاوز تقفله لحد ميعاد معين، أو null للقفل الكامل
+const UNLOCK_DATE_PREP3 = "2020-01-01T00:00:00";   // مفتوح الآن (بس هيفضل يوري "قريبًا" لحد ما PREP3_UNITS تتملى في data.js)
 function isTimeUnlocked(dateStr){
   if(!dateStr) return false;
   return new Date() >= new Date(dateStr);
@@ -31,7 +44,7 @@ let STATE = {
   userName: '',
   studentId: '',
   currentTerm: 1,
-  currentGrade: '1sec',    // '1sec' = الصف الأول الثانوي | '2bac' = الصف الثاني بكالوريا
+  currentGrade: '1sec',    // '1sec' = الصف الأول الثانوي | '2bac' = الصف الثاني بكالوريا | '3prep' = الصف الثالث الإعدادي
   gradeChosen: false,      // false لحد ما الطالب يجاوب على مودال "انت في أي صف؟" أول مرة
   theme: 'default',        // 'default' | 'light' (أبيض) | 'black' (أسود)
   completedLessons: {},    // key: "u1-l0" -> true
@@ -41,8 +54,8 @@ let STATE = {
   examResults: {},         // key: examId -> {bestScore:0-1, attempts:n, passed:bool}
   badgeLog: [],            // [{type:'unit'|'exam', id, name, icon, earnedAt}] بترتيب الحدوث
   quizCorrect: 0,
-  quizCorrectBy: {'1sec':0,'2bac':0},  // إجابات صحيحة لكل صف على حدة
-  xpBy: {'1sec':0,'2bac':0},           // نقاط خبرة (XP) لكل صف على حدة — أساس نظام المستويات
+  quizCorrectBy: {'1sec':0,'2bac':0,'3prep':0},  // إجابات صحيحة لكل صف على حدة
+  xpBy: {'1sec':0,'2bac':0,'3prep':0}, // نقاط خبرة (XP) لكل صف على حدة — أساس نظام المستويات
   startGrade: null,                    // أول صف اختاره الطالب فعليًا على الإطلاق (لا يتغيّر بعد أول اختيار)
   loyaltyBonusGiven: false,            // مكافأة "بدأت من الأول" — تُمنح مرة واحدة فقط
   currentUnit: null,
@@ -134,8 +147,8 @@ async function loadState(){
 // نفس قواعد المنح: درس +10 | إجابة صح +2 (حدّ أدنى، لأن النوع مش متسجّل) | وحدة 100% +50 | امتحان ناجح +100
 // اللي مبدأش أي حاجة فعليًا بيطلع 0 تلقائيًا.
 function computeLegacyXP(){
-  const xp = {'1sec':0,'2bac':0};
-  const unitGrade = id => Number(id) >= 100 ? '2bac' : '1sec';
+  const xp = {'1sec':0,'2bac':0,'3prep':0};
+  const unitGrade = id => Number(id) >= 200 ? '3prep' : (Number(id) >= 100 ? '2bac' : '1sec');
   Object.keys(STATE.completedLessons||{}).forEach(k=>{
     const m = /^u(\d+)-l/.exec(k); if(m) xp[unitGrade(m[1])] += 10;
   });
@@ -162,10 +175,12 @@ function applyLoadedState(parsed){
   STATE.examResults       = parsed.examResults        || {};
   STATE.badgeLog          = parsed.badgeLog           || [];
   STATE.quizCorrect       = parsed.quizCorrect       || 0;
-  STATE.quizCorrectBy     = parsed.quizCorrectBy     || {'1sec': parsed.quizCorrect || 0, '2bac': 0};
+  STATE.quizCorrectBy     = parsed.quizCorrectBy     || {'1sec': parsed.quizCorrect || 0, '2bac': 0, '3prep': 0};
   STATE.xpBy               = parsed.xpBy               || computeLegacyXP();
   STATE.startGrade          = parsed.startGrade          || null;
   STATE.loyaltyBonusGiven    = parsed.loyaltyBonusGiven    || false;
+  // الامتحانات الخمسة مقفولة مؤقتًا (راجع FINAL_EXAMS_LOCKED في data.js) → نصفّر أي نتيجة قديمة فيها
+  if(typeof FINAL_EXAMS_LOCKED !== 'undefined' && FINAL_EXAMS_LOCKED) STATE.examResults = {};
 }
 
 // ============ المظهر: الأساسي (افتراضي) / أبيض (فاتح) / أسود (داكن بالكامل) ============
@@ -184,10 +199,11 @@ function chooseTheme(theme){
 }
 
 // ============ الصف الدراسي (يتسأل عنه مرة واحدة بدل تبويب يتبدّل بينهم) ============
-const GRADE_NAMES = { '1sec': 'الصف الأول الثانوي', '2bac': 'الصف الثاني بكالوريا' };
+const GRADE_NAMES = { '1sec': 'الصف الأول الثانوي', '2bac': 'الصف الثاني بكالوريا', '3prep': 'الصف الثالث الإعدادي' };
 const GRADE_LABELS = {
   '1sec': '// الصف الأول الثانوي — البرمجة والذكاء الاصطناعي',
-  '2bac': '// الصف الثاني بكالوريا — قريبًا'
+  '2bac': '// الصف الثاني بكالوريا — قريبًا',
+  '3prep': '// الصف الثالث الإعدادي — قريبًا'
 };
 function checkGrade(){
   applyGradeView(STATE.currentGrade);
@@ -208,6 +224,10 @@ function chooseGrade(grade){
   saveState();
   checkUserName();
 }
+// ============ التقييمات (مكان محجوز — المحتوى هيتضاف لاحقًا) ============
+function openAssessments(){
+  navTo('screen-assessments', 'التقييمات', 'قريبًا');
+}
 function openGradeModal(){
   const modal = document.getElementById('gradeModal');
   if(modal) modal.style.display = 'flex';
@@ -215,14 +235,19 @@ function openGradeModal(){
 function applyGradeView(grade){
   const g1 = document.getElementById('grade1secContent');
   const g2 = document.getElementById('grade2bacPlaceholder');
+  const g3 = document.getElementById('grade3prepPlaceholder');
   if(g1) g1.style.display = grade==='1sec' ? '' : 'none';
   if(g2) g2.style.display = grade==='2bac' ? '' : 'none';
+  if(g3) g3.style.display = grade==='3prep' ? '' : 'none';
   const hd = document.getElementById('heroDesc');
   if(hd) hd.textContent = grade==='2bac'
     ? 'البرمجة والذكاء الاصطناعي — الجزء الأول: التقنية والمجتمع، الأمن السيبراني، تطبيقات الويب، وتصميم الويب والوسائط.'
+    : grade==='3prep'
+    ? 'منهج الصف الثالث الإعدادي هيتوصف هنا أول ما يتضاف المحتوى.'
     : '13 وحدة، من مفهوم المعلومات إلى الذكاء الاصطناعي التوليدي وبرمجة الويب — بطاقات مركّزة، أمثلة واقعية، واختبارات فورية تناسب موبايلك.';
   refreshHome();
   if(grade==='2bac') renderBac2();
+  if(grade==='3prep') renderPrep3();
   const eyebrow = document.getElementById('heroEyebrow');
   if(eyebrow) eyebrow.textContent = GRADE_LABELS[grade] || GRADE_LABELS['1sec'];
   const gradeLbl = document.getElementById('profGradeLbl');
@@ -269,14 +294,14 @@ function doneLessonsScope(){
     const m = /^u(\d+)-l/.exec(k); return m && ids.has(Number(m[1]));
   }).length;
 }
-function gradeOfUnitId(id){ return Number(id) >= 100 ? '2bac' : '1sec'; }
+function gradeOfUnitId(id){ return Number(id) >= 200 ? '3prep' : (Number(id) >= 100 ? '2bac' : '1sec'); }
 function quizCorrectScope(){
-  if(!STATE.quizCorrectBy) STATE.quizCorrectBy = {'1sec': STATE.quizCorrect||0, '2bac':0};
+  if(!STATE.quizCorrectBy) STATE.quizCorrectBy = {'1sec': STATE.quizCorrect||0, '2bac':0, '3prep':0};
   return STATE.quizCorrectBy[STATE.currentGrade] || 0;
 }
 function bumpQuizCorrect(key, xpPoints){
   STATE.quizCorrect++;
-  if(!STATE.quizCorrectBy) STATE.quizCorrectBy = {'1sec':0,'2bac':0};
+  if(!STATE.quizCorrectBy) STATE.quizCorrectBy = {'1sec':0,'2bac':0,'3prep':0};
   const m = /^l[qp]-(\d+)-/.exec(key);
   const g = m ? gradeOfUnitId(m[1]) : STATE.currentGrade;
   STATE.quizCorrectBy[g] = (STATE.quizCorrectBy[g]||0) + 1;
@@ -311,7 +336,7 @@ function hasLoyaltyBonus(){
 }
 function xpScope(){ return (STATE.xpBy && STATE.xpBy[STATE.currentGrade]) || 0; }
 function addXP(grade, baseAmount){
-  if(!STATE.xpBy) STATE.xpBy = {'1sec':0,'2bac':0};
+  if(!STATE.xpBy) STATE.xpBy = {'1sec':0,'2bac':0,'3prep':0};
   let amount = baseAmount;
   if(grade === '2bac' && hasLoyaltyBonus()) amount = Math.round(baseAmount * 1.25);
   STATE.xpBy[grade] = (STATE.xpBy[grade]||0) + amount;
@@ -402,7 +427,10 @@ function showTab(tab){
   if(tab==='home'){ navTo('screen-home','علوم البرمجة','ملخص تفاعلي لمنهج المعلومات وتكنولوجيا الاتصالات'); STATE.history=['screen-home']; refreshHome(); }
   if(tab==='glossary'){ navTo('screen-glossary','قاموس المصطلحات','ابحث وتعلم بسرعة'); STATE.history=['screen-glossary']; renderGlossary(''); }
   if(tab==='research'){ navTo('screen-research','الأبحاث','طبية · علمية · مدرسية · برمجية · وأي حاجة تانية'); STATE.history=['screen-research']; renderResearchScreen(); }
-  if(tab==='exams'){ navTo('screen-exams','الامتحانات الشاملة', STATE.currentGrade==='2bac' ? 'مقفولة لحد ما المنهج ينزل كامل' : '5 امتحانات × 100 سؤال لمراجعة كل المنهج'); STATE.history=['screen-exams']; renderExamList(); }
+  if(tab==='exams'){
+    const examSub = STATE.currentGrade==='2bac' ? 'مقفولة لحد ما المنهج ينزل كامل' : STATE.currentGrade==='3prep' ? 'هتتفتح قريبًا' : '5 امتحانات × 100 سؤال لمراجعة كل المنهج';
+    navTo('screen-exams','الامتحانات الشاملة', examSub); STATE.history=['screen-exams']; renderExamList();
+  }
   if(tab==='profile'){ navTo('screen-profile','تقدّمي','رحلتك في الكتاب بالكامل'); STATE.history=['screen-profile']; renderProfile(); }
 }
 function setActiveTab(tab){
@@ -1004,6 +1032,7 @@ function examResult(examId){ return STATE.examResults[examId]; }
 function examPassed(examId){ const r = examResult(examId); return !!(r && r.passed); }
 
 function bac2ExamsLocked(){ return STATE.currentGrade==='2bac' && !(BAC2_CURRICULUM_COMPLETE && BAC2_EXAMS.length>0); }
+function finalExamsLocked(){ return STATE.currentGrade==='1sec' && typeof FINAL_EXAMS_LOCKED !== 'undefined' && FINAL_EXAMS_LOCKED; }
 function renderExamList(){
   const list = document.getElementById('examList');
   const intro = document.getElementById('examIntroText');
@@ -1017,10 +1046,27 @@ function renderExamList(){
       </div>`;
       return;
     }
+  } else if(STATE.currentGrade==='3prep'){
+    if(intro) intro.textContent = 'امتحانات الصف الثالث الإعدادي هتتفتح هنا أول ما المحتوى يتضاف.';
+    list.innerHTML = `<div class="card" style="text-align:center; padding:34px 20px;">
+      <div style="font-size:40px; margin-bottom:10px;">🚧</div>
+      <h4 style="margin:0 0 6px;">امتحانات الصف الثالث الإعدادي قريبًا</h4>
+      <p style="color:var(--ink-dim); font-size:12.5px; margin:0;">المكان جاهز ومجهّز — هتتفتح تلقائيًا أول ما يُضاف المحتوى.</p>
+    </div>`;
+    return;
   } else if(intro){
+    if(finalExamsLocked()){
+      intro.textContent = 'الامتحانات الشاملة مقفولة مؤقتًا للمراجعة وهتتفتح قريب.';
+      list.innerHTML = `<div class="card" style="text-align:center; padding:34px 20px;">
+        <div style="font-size:40px; margin-bottom:10px;">🔒</div>
+        <h4 style="margin:0 0 6px;">الامتحانات الشاملة مقفولة مؤقتًا</h4>
+        <p style="color:var(--ink-dim); font-size:12.5px; margin:0;">بنراجع ونحدّث محتوى الوحدات دلوقتي — الامتحانات هتتفتح تاني قريب.</p>
+      </div>`;
+      return;
+    }
     intro.textContent = '5 امتحانات مختلفة، كل امتحان 100 سؤال يغطي كل الوحدات الـ13، وأصعب شوية من اختبارات الوحدات — للمراجعة الشاملة قبل الامتحان الحقيقي. سجّل 90% أو أكثر في أي امتحان عشان تفتح جائزته 🏆.';
   }
-  const EXAMS = STATE.currentGrade==='2bac' ? BAC2_EXAMS : FINAL_EXAMS;
+  const EXAMS = STATE.currentGrade==='2bac' ? BAC2_EXAMS : (STATE.currentGrade==='3prep' ? PREP3_EXAMS : FINAL_EXAMS);
   list.innerHTML = EXAMS.map(ex=>{
     const r = examResult(ex.id);
     const passed = r && r.passed;
@@ -1040,6 +1086,7 @@ function renderExamList(){
 
 function openExam(examId, fromPaper){
   if(bac2ExamsLocked()){ showToast('امتحانات تانية بكالوريا مقفولة لحد ما المنهج ينزل كامل 🔒'); return; }
+  if(finalExamsLocked()){ showToast('الامتحانات الشاملة مقفولة مؤقتًا للمراجعة 🔒'); return; }
   const ex = FINAL_EXAMS.find(x=>x.id===examId);
   let pool;
   if(fromPaper){
@@ -1656,9 +1703,9 @@ async function resetProgress(){
   });
   if(STATE.currentGrade==='1sec') STATE.examResults = {};
   STATE.quizCorrect = Math.max(0, (STATE.quizCorrect||0) - quizCorrectScope());
-  if(!STATE.quizCorrectBy) STATE.quizCorrectBy = {'1sec':0,'2bac':0};
+  if(!STATE.quizCorrectBy) STATE.quizCorrectBy = {'1sec':0,'2bac':0,'3prep':0};
   STATE.quizCorrectBy[STATE.currentGrade] = 0;
-  if(!STATE.xpBy) STATE.xpBy = {'1sec':0,'2bac':0};
+  if(!STATE.xpBy) STATE.xpBy = {'1sec':0,'2bac':0,'3prep':0};
   STATE.xpBy[STATE.currentGrade] = 0;
   if(STATE.currentGrade==='2bac') STATE.loyaltyBonusGiven = false;
   await saveState();
@@ -1775,6 +1822,20 @@ function renderBac2(){
   const unlocked = isTimeUnlocked(UNLOCK_DATE_BAC2) && BAC2_UNITS.length>0;
   if(unlocked){
     grid.innerHTML = buildUnitsGridHTML(BAC2_UNITS);
+    grid.style.display = '';
+    soon.style.display = 'none';
+  }else{
+    grid.style.display = 'none';
+    soon.style.display = '';
+  }
+}
+function renderPrep3(){
+  const grid = document.getElementById('prep3Grid');
+  const soon = document.getElementById('prep3Soon');
+  if(!grid || !soon) return;
+  const unlocked = isTimeUnlocked(UNLOCK_DATE_PREP3) && PREP3_UNITS.length>0;
+  if(unlocked){
+    grid.innerHTML = buildUnitsGridHTML(PREP3_UNITS);
     grid.style.display = '';
     soon.style.display = 'none';
   }else{
@@ -2358,6 +2419,13 @@ function checkForPlatformUpdate(){
     const seen = localStorage.getItem(APP_VERSION_KEY);
     if(seen && seen !== APP_VERSION){
       playUpdateChime();
+      const list = document.getElementById('updateChangelog');
+      const items = CHANGELOG[APP_VERSION] || [];
+      if(list) list.innerHTML = items.length
+        ? items.map(x=>`<li>${x}</li>`).join('')
+        : '<li>تحسينات وإصلاحات عامة</li>';
+      const verLbl = document.getElementById('updateVersionLbl');
+      if(verLbl) verLbl.textContent = APP_VERSION;
       const modal = document.getElementById('updateModal');
       if(modal) modal.style.display = 'flex';
     }
