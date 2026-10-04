@@ -93,9 +93,27 @@
         <p style="color:var(--ink-dim); font-size:12.5px; margin:0;">المكان جاهز ومجهّز — هيتفتح تلقائيًا في معاده أول ما يُضاف المحتوى.</p>
       </div>
     </div>
+
+    <div id="grade3prepPlaceholder" style="display:none;">
+      <div class="section-label"><h3>وحدات الصف الثالث الإعدادي</h3></div>
+      <div class="unit-grid" id="prep3Grid" style="display:none;"></div>
+      <div class="card" id="prep3Soon" style="text-align:center; padding:34px 20px;">
+        <div style="font-size:40px; margin-bottom:10px;">🚧</div>
+        <h4 style="margin:0 0 6px;">محتوى الصف الثالث الإعدادي قريبًا</h4>
+        <p style="color:var(--ink-dim); font-size:12.5px; margin:0;">المكان جاهز ومجهّز — هيتفتح تلقائيًا في معاده أول ما يُضاف المحتوى.</p>
+      </div>
+    </div>
   </div>
 
   <!-- UNIT -->
+  <div class="screen" id="screen-assessments">
+    <div class="card" style="text-align:center; padding:34px 20px;">
+      <div style="font-size:40px; margin-bottom:10px;">🚧</div>
+      <h4 style="margin:0 0 6px;">التقييمات قريبًا</h4>
+      <p style="color:var(--ink-dim); font-size:12.5px; margin:0;">المكان جاهز ومجهّز — هيتفتح تلقائيًا أول ما يُضاف المحتوى هنا.</p>
+    </div>
+  </div>
+
   <div class="screen" id="screen-lan"><div id="lanRoot"></div></div>
   <div class="screen" id="screen-sync"><div id="syncRoot"></div></div>
 
@@ -337,6 +355,15 @@
       <button class="btn btn-ghost" style="flex:none;" onclick="forceAppUpdate()">تحديث</button>
     </div>
 
+    <div class="section-label"><h3>التقييمات</h3></div>
+    <div class="card" style="display:flex; align-items:center; gap:12px;" onclick="openAssessments()">
+      <div style="font-size:26px; flex:none;">📊</div>
+      <div style="flex:1; font-size:12px; color:var(--ink-dim); line-height:1.7;">
+        قسم التقييمات — المكان جاهز، والمحتوى هيتضاف قريبًا.
+      </div>
+      <div class="chev">‹</div>
+    </div>
+
     <div class="section-label"><h3>النسخة الاحتياطية</h3></div>
     <div class="card">
       <p style="margin:0 0 12px; font-size:12.5px; color:var(--ink-dim); line-height:1.8;">
@@ -368,7 +395,8 @@
     <div style="font-size:34px; text-align:center; margin-bottom:6px;">🎓</div>
     <h3>انت في أي صف؟</h3>
     <p>هنعرض ليك المحتوى المناسب لصفك بس — تقدر تغيّره في أي وقت من صفحة "تقدّمي".</p>
-    <button class="btn btn-primary" style="width:100%; margin-top:6px;" onclick="chooseGrade('1sec')">📗 الصف الأول الثانوي</button>
+    <button class="btn btn-primary" style="width:100%; margin-top:6px;" onclick="chooseGrade('3prep')">📙 الصف الثالث الإعدادي</button>
+    <button class="btn btn-primary" style="width:100%; margin-top:8px;" onclick="chooseGrade('1sec')">📗 الصف الأول الثانوي</button>
     <button class="btn btn-primary" style="width:100%; margin-top:8px;" onclick="chooseGrade('2bac')">📘 الصف الثاني بكالوريا</button>
   </div>
 </div>
@@ -387,9 +415,12 @@
   <div class="modal-box">
     <div style="font-size:34px; text-align:center; margin-bottom:6px;">🔄</div>
     <h3>في تحديث جديد بالمنصة!</h3>
-    <p>ضفنا تحسينات أو محتوى جديد. عشان تفضل بياناتك آمنة تمامًا، ياريت تاخد نسخة احتياطية من تقدمك دلوقتي قبل ما تكمل.</p>
+    <p style="margin-bottom:8px;">ضفنا الحاجات دي:</p>
+    <ul id="updateChangelog" class="update-changelog"></ul>
+    <p>عشان تفضل بياناتك آمنة تمامًا، ياريت تاخد نسخة احتياطية من تقدمك دلوقتي قبل ما تكمل.</p>
     <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="backupThenCloseUpdateModal()">📤 تصدير نسخة احتياطية الآن</button>
     <button class="btn btn-ghost" style="width:100%; margin-top:8px;" onclick="closeUpdateModal()">تجاهل والمتابعة</button>
+    <div class="update-version-lbl">الإصدار <span id="updateVersionLbl"></span></div>
   </div>
 </div>
 
@@ -425,5 +456,7 @@ if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('service-worker.js').catch(()=>{}); });
 }
 </script>
+<!-- Vercel Web Analytics — بيشتغل تلقائي لما الموقع يكون مرفوع على Vercel وتفعّل "Web Analytics" من إعدادات المشروع -->
+<script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
