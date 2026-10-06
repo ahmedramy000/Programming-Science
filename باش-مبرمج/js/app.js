@@ -203,7 +203,7 @@ const GRADE_NAMES = { '1sec': 'الصف الأول الثانوي', '2bac': 'ا�
 const GRADE_LABELS = {
   '1sec': '// الصف الأول الثانوي — البرمجة والذكاء الاصطناعي',
   '2bac': '// الصف الثاني بكالوريا — قريبًا',
-  '3prep': '// الصف الثالث الإعدادي — قريبًا'
+  '3prep': '// الصف الثالث الإعدادي — الذكاء الاصطناعي ولغات البرمجة'
 };
 function checkGrade(){
   applyGradeView(STATE.currentGrade);
@@ -243,7 +243,7 @@ function applyGradeView(grade){
   if(hd) hd.textContent = grade==='2bac'
     ? 'البرمجة والذكاء الاصطناعي — الجزء الأول: التقنية والمجتمع، الأمن السيبراني، تطبيقات الويب، وتصميم الويب والوسائط.'
     : grade==='3prep'
-    ? 'منهج الصف الثالث الإعدادي هيتوصف هنا أول ما يتضاف المحتوى.'
+    ? 'وحدتان: الذكاء الاصطناعي ولغات البرمجة، والذكاء الاصطناعي والأمن السيبراني — بطاقات مركّزة وأمثلة بايثون واختبارات فورية.'
     : '13 وحدة، من مفهوم المعلومات إلى الذكاء الاصطناعي التوليدي وبرمجة الويب — بطاقات مركّزة، أمثلة واقعية، واختبارات فورية تناسب موبايلك.';
   refreshHome();
   if(grade==='2bac') renderBac2();
@@ -282,7 +282,7 @@ function saveUserName(){
 function lessonKey(uId,lIdx){ return `u${uId}-l${lIdx}`; }
 function quizKey(uId,lIdx,qi){ return `lq-${uId}-${lIdx}-${qi}`; }
 function practiceKey(uId,lIdx,qi){ return `lp-${uId}-${lIdx}-${qi}`; }
-function findUnit(id){ return UNITS.find(x=>x.id===id) || TERM2_UNITS.find(x=>x.id===id) || BAC2_UNITS.find(x=>x.id===id); }
+function findUnit(id){ return UNITS.find(x=>x.id===id) || TERM2_UNITS.find(x=>x.id===id) || BAC2_UNITS.find(x=>x.id===id) || PREP3_UNITS.find(x=>x.id===id); }
 function totalLessons(){ return UNITS.reduce((s,u)=>s+u.lessons.length,0); }
 function doneLessonsCount(){ return Object.keys(STATE.completedLessons).length; }
 // ---- إحصائيات مقصورة على صف الطالب الحالي فقط (بدون خلط بين الصفوف) ----
