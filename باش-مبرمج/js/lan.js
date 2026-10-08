@@ -504,11 +504,12 @@ const VIEWS = {
     return `<div class="card">
       <b>🏆 مسابقة جديدة</b>
       <p style="margin:6px 0 10px; color:var(--ink-dim); font-size:12.5px;">المشتركين: ${n+1} (إنت + ${n}). الأسئلة من الاختبار الشامل للوحدة، والنقاط بتزيد مع السرعة.</p>
-      <select id="cUnit" class="lan-input" style="margin-bottom:8px;">${units.map(u=>`<option value="${u.id}">الوحدة ${u.id>=100?u.id-100:u.id} — ${esc(u.title)}</option>`).join('')}</select>
+      <select id="cUnit" class="lan-input" style="margin-bottom:8px;">${units.map(u=>`<option value="${u.id}">الوحدة ${u.id>=100?u.id-100:u.id} — ${esc(u.title)} (${u.finalTest.length} سؤال)</option>`).join('')}</select>
       <div class="lan-grid">
-        <select id="cCount" class="lan-input"><option value="5">5 أسئلة</option><option value="10" selected>10 أسئلة</option><option value="15">15 سؤال</option></select>
+        <input type="number" id="cCount" class="lan-input" min="3" max="60" step="1" value="10" placeholder="عدد الأسئلة">
         <select id="cSecs" class="lan-input"><option value="15">15 ثانية</option><option value="25" selected>25 ثانية</option><option value="40">40 ثانية</option></select>
       </div>
+      <p style="margin:6px 0 0; font-size:11px; color:var(--ink-dim);">اختار أي عدد أسئلة من 3 لحد 60 — حسب بنك أسئلة الوحدة المختارة.</p>
       <div class="nav-btns" style="margin-top:12px;"><button class="btn btn-primary" onclick="ZLAN.startContest()">ابدأ 🚀</button></div>
       <p style="margin:10px 0 0; font-size:11px; color:var(--ink-dim);">كل إجابة صح بتدّي صاحبها ${XP_PER_CORRECT} XP على جهازه (لازم يكون فيه لاعبين اتنين على الأقل).</p>
     </div>
@@ -670,7 +671,7 @@ window.ZLAN = {
     go(R.role === 'host' ? 'host' : 'client');
   },
   openLesson(id){ go('lesson', id); },
-  startContest(){ hostStartContest(+$('cUnit').value, +$('cCount').value, +$('cSecs').value); },
+  startContest(){ const n = Math.max(3, Math.min(60, +$('cCount').value||10)); hostStartContest(+$('cUnit').value, n, +$('cSecs').value); },
   ans: answer, fill: answerFill, skip: skipNow,
   pick(v){ if(R.cur && !R.cur.answered){ R.cur.picked = v; paintQ(); } },
   confirmPick(){ if(R.cur && !R.cur.answered && R.cur.picked !== null) answer(R.cur.picked); }
