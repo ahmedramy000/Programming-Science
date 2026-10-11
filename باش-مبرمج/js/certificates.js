@@ -1,7 +1,9 @@
 // ==================================================================================
 //  علوم البرمجة — نظام المراكز والشهادات
-//  المركز يُحسب من أداء الطالب في كل الاختبارات: اختبارات الوحدات الـ13 الشاملة
-//  + الامتحانات الشاملة الخمسة (إجمالي 18 تقييمًا).
+//  المركز يُحسب من أداء الطالب في كل الاختبارات المتاحة لصفّه الدراسي: اختبارات الوحدات
+//  الشاملة + الامتحانات الشاملة (العدد يختلف حسب الصف — راجع certScope() في data.js).
+//  نسب minAttemptedFrac بتتحسب كنسبة من إجمالي عدد التقييمات المتاحة، مش رقم ثابت،
+//  عشان النظام يفضل عادل لكل صف دراسي حتى لو عدد الوحدات أو الامتحانات اختلف لاحقًا.
 //  © Ahmed Rami
 // ==================================================================================
 
@@ -45,7 +47,7 @@ const CERT_TIERS = [
     icon: '🎖️',
     ribbon: '#8A5AD6',
     minScore: 0.70,
-    minAttempted: 14,
+    minAttemptedFrac: 14/18, // ~78% من إجمالي تقييمات الصف (كانت 14 من أصل 18 وقت ما كان فيه 5 امتحانات بس)
     message: (name, s)=> `تُشهد منصة "علوم البرمجة" بأن الطالب/ة ${name} حصل/حصلت على شهادة تفوّق في ${(s&&s.gradeLabel)||'المنهج'} ` +
       `لأداء قوي عبر معظم اختبارات المنهج. خطوات كويسة جدًا — كمّل بقية الوحدات والامتحانات عشان توصل لمركز أعلى! 👏`
   },
@@ -55,7 +57,7 @@ const CERT_TIERS = [
     icon: '📜',
     ribbon: '#3AA0FF',
     minScore: 0.5,
-    minAttempted: 9,
+    minAttemptedFrac: 9/18, // = 50% من إجمالي تقييمات الصف
     message: (name, s)=> `تُشهد منصة "علوم البرمجة" بأن الطالب/ة ${name} حصل/حصلت على شهادة إنجاز في ${(s&&s.gradeLabel)||'المنهج'} ` +
       `لتقدّم ملموس في مذاكرة ومراجعة المنهج. استمر/ي، كل درس ونتيجة بتقربك من الشهادات الأعلى! 🚀`
   },
@@ -91,11 +93,13 @@ function computeCertRank(){
   const allUnitsPassed = scopeUnits.every(u => unitFinalTestPassed(u));
   const allExamsPassed = scopeExams.length ? scopeExams.every(ex => examPassed(ex.id)) : true; // لو صف الطالب لسه من غير امتحانات شاملة، الشرط ده مش عائق
 
+  const totalScope = scopeUnits.length + scopeExams.length;
   const meetsTier = (tier)=>{
     if(overallScore < tier.minScore) return false;
     if(tier.requireAllUnits && !allUnitsPassed) return false;
     if(tier.requireAllExams && !allExamsPassed) return false;
     if(tier.minAttempted && attemptedCount < tier.minAttempted) return false;
+    if(tier.minAttemptedFrac && attemptedCount < Math.ceil(tier.minAttemptedFrac * totalScope)) return false;
     return true;
   };
 

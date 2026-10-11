@@ -6,7 +6,7 @@
 // 🔔 رقم إصدار المنصة — غيّر القيمة دي لأي رقم جديد (مثلاً "1.1.0") في كل مرة تعمل فيها
 // تحديث حقيقي على المنصة (دروس/أسئلة/فيتشرز جديدة). كل طالب فتح المنصة قبل كده هيشوف
 // تنبيه صوتي تلقائي بوجود تحديث، وهيتشجّع ياخد نسخة احتياطية من تقدمه قبل ما يكمل.
-const APP_VERSION = "1.17.5";
+const APP_VERSION = "1.17.8";
 
 // 📋 سجلّ التحديثات — كل مرة تزوّد رقم APP_VERSION فوق، ضيف سطر هنا بنفس رقم الإصدار يوضّح
 // إيه الجديد. القائمة دي بتظهر تلقائيًا جوه نافذة "في تحديث جديد" لكل طالب لسه مشافهاش.
@@ -23,6 +23,16 @@ const CHANGELOG = {
     "🔢 أسئلة تحويل بين الأنظمة العددية (عشري/ثنائي/سادس عشر) اتضافت لوحدة تصميم المعلومات",
     "🏆 امتحان شامل سادس جديد (100 سؤال) مخصص لتحويل الأنظمة العددية فقط",
     "🎚️ في مسابقات اللان بقى تقدر تكتب أي عدد أسئلة من 3 لحد 60 بدل اختيارات محدودة"
+  ],
+  "1.17.6": [
+    "🔓 الامتحان السادس (تحويل الأنظمة العددية) بقى متاح دايمًا حتى والامتحانات التانية مقفولة للمراجعة"
+  ],
+  "1.17.7": [
+    "🎓 باقي الامتحانات الشاملة بقت تتفتح تلقائيًا لكل طالب بمجرد ما يخلّص ويعدّي اختبارات الـ13 وحدة كلها"
+  ],
+  "1.17.8": [
+    "⏱️ وقت الامتحان السادس (تحويل الأنظمة العددية) بقى 230 دقيقة بدل الوقت العادي",
+    "🏅 نظام الشهادات والجوائز بقى بيتحسب بنسبة عادلة من إجمالي تقييمات كل صف، بدل رقم ثابت ما كانش بيناسب كل الصفوف"
   ]
 };
 
@@ -434,7 +444,7 @@ function showTab(tab){
   if(tab==='glossary'){ navTo('screen-glossary','قاموس المصطلحات','ابحث وتعلم بسرعة'); STATE.history=['screen-glossary']; renderGlossary(''); }
   if(tab==='research'){ navTo('screen-research','الأبحاث','طبية · علمية · مدرسية · برمجية · وأي حاجة تانية'); STATE.history=['screen-research']; renderResearchScreen(); }
   if(tab==='exams'){
-    const examSub = STATE.currentGrade==='2bac' ? 'مقفولة لحد ما المنهج ينزل كامل' : STATE.currentGrade==='3prep' ? 'هتتفتح قريبًا' : '5 امتحانات × 100 سؤال لمراجعة كل المنهج';
+    const examSub = STATE.currentGrade==='2bac' ? 'مقفولة لحد ما المنهج ينزل كامل' : STATE.currentGrade==='3prep' ? 'هتتفتح قريبًا' : '6 امتحانات شاملة لمراجعة المنهج';
     navTo('screen-exams','الامتحانات الشاملة', examSub); STATE.history=['screen-exams']; renderExamList();
   }
   if(tab==='profile'){ navTo('screen-profile','تقدّمي','رحلتك في الكتاب بالكامل'); STATE.history=['screen-profile']; renderProfile(); }
@@ -557,6 +567,12 @@ function openUnit(id, push=true){
 const AVG_SECS_PER_TYPE = { mcq: 40, tf: 25, fill: 55 };
 function estimateTestSeconds(questions){
   return questions.reduce((sum,q)=> sum + (AVG_SECS_PER_TYPE[q.type] || 35), 0);
+}
+// الامتحان السادس (تحويل الأنظمة العددية) محتاج وقت أطول بكتير عشان أسئلته فيها حسبة يدوية —
+// وقته ثابت 230 دقيقة بدل التقدير العادي اللي بيحسبه estimateTestSeconds للامتحانات التانية.
+function examTimeSeconds(ex){
+  if(ex && ex.id === 6) return 230 * 60;
+  return estimateTestSeconds(ex.questions);
 }
 function formatMMSS(totalSeconds){
   const s = Math.max(0, Math.round(totalSeconds));
@@ -1038,7 +1054,13 @@ function examResult(examId){ return STATE.examResults[examId]; }
 function examPassed(examId){ const r = examResult(examId); return !!(r && r.passed); }
 
 function bac2ExamsLocked(){ return STATE.currentGrade==='2bac' && !(BAC2_CURRICULUM_COMPLETE && BAC2_EXAMS.length>0); }
-function finalExamsLocked(){ return STATE.currentGrade==='1sec' && typeof FINAL_EXAMS_LOCKED !== 'undefined' && FINAL_EXAMS_LOCKED; }
+function allUnits1secPassed(){ return UNITS.every(u => unitFinalTestPassed(u)); }
+function finalExamsLocked(examId){
+  if(examId === 6) return false; // الامتحان السادس (تحويل الأنظمة العددية) مفتوح دايمًا بغض النظر عن القفل العام
+  if(STATE.currentGrade !== '1sec') return false;
+  if(typeof FINAL_EXAMS_LOCKED === 'undefined' || !FINAL_EXAMS_LOCKED) return false;
+  return !allUnits1secPassed(); // بمجرد ما الطالب يخلّص ويعدّي اختبارات الـ13 وحدة كلها، باقي الامتحانات تتفتح له تلقائيًا
+}
 function renderExamList(){
   const list = document.getElementById('examList');
   const intro = document.getElementById('examIntroText');
@@ -1062,37 +1084,39 @@ function renderExamList(){
     return;
   } else if(intro){
     if(finalExamsLocked()){
-      intro.textContent = 'الامتحانات الشاملة مقفولة مؤقتًا للمراجعة وهتتفتح قريب.';
-      list.innerHTML = `<div class="card" style="text-align:center; padding:34px 20px;">
-        <div style="font-size:40px; margin-bottom:10px;">🔒</div>
-        <h4 style="margin:0 0 6px;">الامتحانات الشاملة مقفولة مؤقتًا</h4>
-        <p style="color:var(--ink-dim); font-size:12.5px; margin:0;">بنراجع ونحدّث محتوى الوحدات دلوقتي — الامتحانات هتتفتح تاني قريب.</p>
-      </div>`;
+      intro.textContent = 'باقي الامتحانات الشاملة هتتفتح لك تلقائيًا بمجرد ما تخلّص وتعدّي اختبارات الـ13 وحدة كلها، إلا امتحان تحويل الأنظمة العددية.';
+      const ex6 = FINAL_EXAMS.find(x=>x.id===6);
+      list.innerHTML = `<div class="card" style="text-align:center; padding:28px 20px;">
+        <div style="font-size:36px; margin-bottom:8px;">🔒</div>
+        <h4 style="margin:0 0 6px;">باقي الامتحانات هتتفتح بعد ما تخلّص كل الوحدات</h4>
+        <p style="color:var(--ink-dim); font-size:12.5px; margin:0;">كمّل وعدّي اختبارات الـ13 وحدة، وهتتفتح تلقائيًا من غير ما تحتاج تعمل حاجة تانية.</p>
+      </div>` + (ex6 ? examCardHTML(ex6) : '');
       return;
     }
-    intro.textContent = '5 امتحانات مختلفة، كل امتحان 100 سؤال يغطي كل الوحدات الـ13، وأصعب شوية من اختبارات الوحدات — للمراجعة الشاملة قبل الامتحان الحقيقي. سجّل 90% أو أكثر في أي امتحان عشان تفتح جائزته 🏆.';
+    intro.textContent = '6 امتحانات شاملة: خمسة منها (100 سؤال لكل واحد) بتغطي كل الوحدات الـ13 وأصعب شوية من اختبارات الوحدات، والسادس مخصص بس لتحويل الأنظمة العددية. سجّل 90% أو أكثر في أي امتحان عشان تفتح جائزته 🏆.';
   }
   const EXAMS = STATE.currentGrade==='2bac' ? BAC2_EXAMS : (STATE.currentGrade==='3prep' ? PREP3_EXAMS : FINAL_EXAMS);
-  list.innerHTML = EXAMS.map(ex=>{
-    const r = examResult(ex.id);
-    const passed = r && r.passed;
-    const bestPct = r ? Math.round(r.bestScore*100) : null;
-    return `<div class="exam-card">
-      <div class="exnum" onclick="openExam(${ex.id})">${ex.id}</div>
-      <div class="exmeta" onclick="openExam(${ex.id})">
-        <h4>${ex.title} ${passed?'<span class=\"badge-ok\">✓ 🏆</span>':''}</h4>
-        <p>${ex.questions.length} سؤال · تغطي كل الوحدات الـ13 ${r? `· أفضل نتيجة: ${bestPct}% (${r.attempts} محاولة)` : '· لم تُحل بعد'}</p>
-      </div>
-      <button class="exam-print-btn" onclick="event.stopPropagation(); printExamPaper(${ex.id})" title="طباعة/تصدير PDF">🖨️</button>
-      <button class="exam-print-btn" onclick="event.stopPropagation(); openExamFromPaper(${ex.id})" title="تسليم حل ورقي">📥</button>
-      <div class="exbadge" onclick="openExam(${ex.id})">${passed?'🏆':'▶️'}</div>
-    </div>`;
-  }).join('');
+  list.innerHTML = EXAMS.map(examCardHTML).join('');
+}
+function examCardHTML(ex){
+  const r = examResult(ex.id);
+  const passed = r && r.passed;
+  const bestPct = r ? Math.round(r.bestScore*100) : null;
+  return `<div class="exam-card">
+    <div class="exnum" onclick="openExam(${ex.id})">${ex.id}</div>
+    <div class="exmeta" onclick="openExam(${ex.id})">
+      <h4>${ex.title} ${passed?'<span class=\"badge-ok\">✓ 🏆</span>':''}</h4>
+      <p>${ex.questions.length} سؤال ${r? `· أفضل نتيجة: ${bestPct}% (${r.attempts} محاولة)` : '· لم تُحل بعد'}</p>
+    </div>
+    <button class="exam-print-btn" onclick="event.stopPropagation(); printExamPaper(${ex.id})" title="طباعة/تصدير PDF">🖨️</button>
+    <button class="exam-print-btn" onclick="event.stopPropagation(); openExamFromPaper(${ex.id})" title="تسليم حل ورقي">📥</button>
+    <div class="exbadge" onclick="openExam(${ex.id})">${passed?'🏆':'▶️'}</div>
+  </div>`;
 }
 
 function openExam(examId, fromPaper){
   if(bac2ExamsLocked()){ showToast('امتحانات تانية بكالوريا مقفولة لحد ما المنهج ينزل كامل 🔒'); return; }
-  if(finalExamsLocked()){ showToast('الامتحانات الشاملة مقفولة مؤقتًا للمراجعة 🔒'); return; }
+  if(finalExamsLocked(examId)){ showToast('الامتحانات الشاملة مقفولة مؤقتًا للمراجعة 🔒'); return; }
   const ex = FINAL_EXAMS.find(x=>x.id===examId);
   let pool;
   if(fromPaper){
@@ -1131,7 +1155,7 @@ function renderExamScreen(){
       <div id="paperPhotoPreview"></div>
     </div>`;
   } else {
-    const estSecs = estimateTestSeconds(s.questions);
+    const estSecs = examTimeSeconds(ex);
     html += `<div class="card exams-intro">
       <span class="card-tag" style="background:rgba(255,110,143,.14); color:var(--accent-3);">🏁 ${ex.title}</span>
       <p style="margin:0 0 8px;">${s.questions.length} سؤال، أجب وأكّد كل سؤال. النجاح بجائزة 🏆 يتطلب 90% أو أكثر.</p>
@@ -1150,7 +1174,7 @@ function renderExamScreen(){
   document.getElementById('examBody').innerHTML = html;
   document.getElementById('examProg').style.width = '0%';
   if(!s.fromPaper){
-    const estSecs = estimateTestSeconds(s.questions);
+    const estSecs = examTimeSeconds(ex);
     startCountdown(estSecs, 'examTestTimer', lockExamOnTimeout);
   }
 }
