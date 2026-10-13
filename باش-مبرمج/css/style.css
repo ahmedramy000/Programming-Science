@@ -556,3 +556,19 @@ body{
 .update-changelog{margin:0 0 12px; padding-inline-start:20px; line-height:1.9; font-size:13px; text-align:right;}
 .update-changelog li{margin-bottom:4px;}
 .update-version-lbl{margin-top:14px; text-align:center; font-size:11px; color:var(--ink-dim); direction:ltr;}
+
+/* ===== شاشة التحديات (challenges.js) — سلم المستويات وواجهة الحل خطوة بخطوة ===== */
+.ch-ladder{display:flex; align-items:center; justify-content:space-between; padding:6px 2px;}
+.ch-lvl{display:flex; flex-direction:column; align-items:center; gap:2px; width:40px; opacity:.55;}
+.ch-lvl.open, .ch-lvl.done{opacity:1; cursor:pointer;}
+.ch-lvl-ic{font-size:20px;}
+.ch-lvl-n{font-size:10px; font-weight:800; color:var(--ink-dim);}
+.ch-lvl.done .ch-lvl-n{color:var(--accent);}
+.ch-lvl.open .ch-lvl-n{color:#FFC168;}
+.ch-lvl-line{flex:1; height:2px; background:var(--line); margin:0 2px; margin-bottom:14px;}
+
+.step-row{display:flex; justify-content:space-between; align-items:center; padding:8px 10px; border-radius:10px; background:var(--panel-2); margin-bottom:6px; font-size:12.5px; direction:ltr; text-align:left;}
+.step-row.ok{border:1px solid rgba(51,224,194,.35);}
+.step-row.bad{border:1px solid rgba(255,110,143,.35);}
+.step-input-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap; direction:ltr;}
+.step-input-row input{text-align:center;}
