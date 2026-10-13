@@ -6,7 +6,7 @@
 // 🔔 رقم إصدار المنصة — غيّر القيمة دي لأي رقم جديد (مثلاً "1.1.0") في كل مرة تعمل فيها
 // تحديث حقيقي على المنصة (دروس/أسئلة/فيتشرز جديدة). كل طالب فتح المنصة قبل كده هيشوف
 // تنبيه صوتي تلقائي بوجود تحديث، وهيتشجّع ياخد نسخة احتياطية من تقدمه قبل ما يكمل.
-const APP_VERSION = "1.17.8";
+const APP_VERSION = "1.18.0";
 
 // 📋 سجلّ التحديثات — كل مرة تزوّد رقم APP_VERSION فوق، ضيف سطر هنا بنفس رقم الإصدار يوضّح
 // إيه الجديد. القائمة دي بتظهر تلقائيًا جوه نافذة "في تحديث جديد" لكل طالب لسه مشافهاش.
@@ -33,6 +33,12 @@ const CHANGELOG = {
   "1.17.8": [
     "⏱️ وقت الامتحان السادس (تحويل الأنظمة العددية) بقى 230 دقيقة بدل الوقت العادي",
     "🏅 نظام الشهادات والجوائز بقى بيتحسب بنسبة عادلة من إجمالي تقييمات كل صف، بدل رقم ثابت ما كانش بيناسب كل الصفوف"
+  ],
+  "1.18.0": [
+    "🧩 قسم جديد: التحديات — صعوبة بتزيد تدريجيًا من سهل لأسطوري (5 مستويات)",
+    "📚 تحديات المنهج: أسئلة مخلوطة من كل وحدات صفّك",
+    "🔢 تحديات الأرقام (أول ثانوي): تحويل بين الأنظمة العددية بمستويات صعوبة حقيقية",
+    "✍️ أسلوب جديد في المستوى الخامس: حل خطوة بخطوة بدل الاختيار من متعدد، وبيوريك ناتج كل عملية حسابية فورًا بدل ما تحتاج آلة حاسبة"
   ]
 };
 
@@ -78,6 +84,8 @@ let STATE = {
   currentLessonIdx: 0,
   finalTestSession: null,  // {unitId, questions:[...], answeredCount, correctCount}
   examSession: null,       // {examId, questions:[...], answeredCount, correctCount}
+  challengeSession: null,  // {track:'curriculum'|'numbers', level, questions, answeredCount, correctCount}
+  challengeProgress: {curriculum: {'1sec':0,'2bac':0,'3prep':0}, numbers: 0}, // أعلى مستوى اتعدّى (0 = لسه مفتحش حاجة)
   history: ['screen-home']
 };
 
@@ -195,6 +203,7 @@ function applyLoadedState(parsed){
   STATE.xpBy               = parsed.xpBy               || computeLegacyXP();
   STATE.startGrade          = parsed.startGrade          || null;
   STATE.loyaltyBonusGiven    = parsed.loyaltyBonusGiven    || false;
+  STATE.challengeProgress  = parsed.challengeProgress  || {curriculum: {'1sec':0,'2bac':0,'3prep':0}, numbers: 0};
   // الامتحانات الخمسة مقفولة مؤقتًا (راجع FINAL_EXAMS_LOCKED في data.js) → نصفّر أي نتيجة قديمة فيها
   if(typeof FINAL_EXAMS_LOCKED !== 'undefined' && FINAL_EXAMS_LOCKED) STATE.examResults = {};
 }
@@ -838,6 +847,14 @@ function onQuestionAnswered(key, isCorrect, kind){
       s.answeredCount++;
       if(isCorrect) s.correctCount++;
       updateExamFooter();
+    }
+  } else if(kind === 'challenge'){
+    const s = STATE.challengeSession;
+    if(s && !s.answered[key]){
+      s.answered[key] = true;
+      s.answeredCount++;
+      if(isCorrect) s.correctCount++;
+      if(typeof updateChallengeFooter === 'function') updateChallengeFooter();
     }
   }
 }
@@ -1738,6 +1755,9 @@ async function resetProgress(){
   if(!STATE.xpBy) STATE.xpBy = {'1sec':0,'2bac':0,'3prep':0};
   STATE.xpBy[STATE.currentGrade] = 0;
   if(STATE.currentGrade==='2bac') STATE.loyaltyBonusGiven = false;
+  if(!STATE.challengeProgress) STATE.challengeProgress = {curriculum:{'1sec':0,'2bac':0,'3prep':0}, numbers:0};
+  STATE.challengeProgress.curriculum[STATE.currentGrade] = 0;
+  if(STATE.currentGrade==='1sec') STATE.challengeProgress.numbers = 0;
   await saveState();
   renderProfile(); refreshHome();
   showToast('تم إعادة ضبط التقدّم');
