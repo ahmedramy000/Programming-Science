@@ -61,6 +61,15 @@
       <div class="wa-banner-arrow">‹</div>
     </div>
 
+    <div class="card wa-banner" onclick="openChallenges()">
+      <div class="wa-banner-ic" style="background:rgba(255,180,84,.18);">🧩</div>
+      <div class="wa-banner-meta">
+        <b>التحديات — صعوبة بتزيد تدريجيًا</b>
+        <span>تحديات على المنهج كله وتحديات على تحويل الأرقام، من سهل لأسطوري</span>
+      </div>
+      <div class="wa-banner-arrow">‹</div>
+    </div>
+
     <div id="grade1secContent">
       <div class="term-toggle">
         <button class="term-btn active" data-term="1" onclick="switchTerm(1)">📗 الترم الأول</button>
@@ -211,6 +220,17 @@
   <div class="screen" id="screen-examtest">
     <div class="progressbar"><i id="examProg" style="width:0%"></i></div>
     <div id="examBody"></div>
+  </div>
+
+  <!-- CHALLENGES HUB -->
+  <div class="screen" id="screen-challenges">
+    <div id="challengesRoot"></div>
+  </div>
+
+  <!-- CHALLENGE SESSION -->
+  <div class="screen" id="screen-challenge-session">
+    <div class="progressbar"><i id="challengeProg" style="width:0%"></i></div>
+    <div id="challengeBody"></div>
   </div>
 
   <!-- CERTIFICATE -->
@@ -456,6 +476,7 @@
 <script src="js/certificates.js"></script>
 <script src="js/crypto-backup.js"></script>
 <script src="js/app.js"></script>
+<script src="js/challenges.js"></script>
 <script src="js/qr.js"></script>
 <script src="js/lan.js"></script>
 <script src="js/sync.js"></script>

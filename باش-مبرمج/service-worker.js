@@ -2,7 +2,7 @@
 // يخزّن ملفات التطبيق الأساسية محليًا عشان يشتغل بدون إنترنت ويكون قابل للتثبيت كتطبيق.
 // © Ahmed Rami
 
-const CACHE_NAME = 'zakera-raqmeya-v32';
+const CACHE_NAME = 'zakera-raqmeya-v33';
 const APP_SHELL = [
   './',
   './index.html',
@@ -12,6 +12,7 @@ const APP_SHELL = [
   './js/data.js',
   './js/glossary.js',
   './js/certificates.js',
+  './js/challenges.js',
   './js/crypto-backup.js',
   './js/qr.js',
   './js/lan.js',
