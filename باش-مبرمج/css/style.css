@@ -378,6 +378,12 @@ body{
   color:var(--ink); font-family:'Tajawal'; font-size:13.5px; text-align:center;
 }
 
+/* ---------- مودال الميم الترحيبي (أول/آخر درس بكل صف) ---------- */
+.meme-modal-box{ max-width:360px; }
+.meme-modal-img{
+  width:100%; height:auto; border-radius:14px; display:block; border:1px solid var(--line);
+}
+
 /* ---------- ملاحظة طريقة الحل قبل إكمال الفراغ ---------- */
 .fill-hint{
   background:rgba(255,185,77,.10); border:1px solid rgba(255,185,77,.25); color:var(--accent-2);
