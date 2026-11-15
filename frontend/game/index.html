@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>كودوسِك — تعلّم البرمجة والأمن السيبراني باللعب</title>
+<link rel="manifest" href="../manifest.json">
+<link rel="icon" href="../icon-192.png">
+<link rel="apple-touch-icon" href="../icon-192.png">
+<meta name="theme-color" content="#7c5cff">
+<link rel="stylesheet" href="../assets/css/game.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">كودوسِك<span class="dot">.</span></div>
+  <button id="installBtn" style="display:none;background:var(--accent2);color:#06201d;border:none;border-radius:10px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;">⬇️ ثبّت التطبيق</button>
+</header>
+
+<main>
+  <section class="hero">
+    <h1>تعلّم البرمجة والأمن السيبراني باللعب 🎮</h1>
+    <p>منصة مصرية بتعلّم الأطفال والمبتدئين البرمجة بأسلوب سحب-وإفلات، بالظبط زي QUREO، بس بمسارات متنوعة منها الأمن السيبراني.</p>
+  </section>
+
+  <div class="tracks">
+    <div class="track">
+      <div class="emoji">🧩</div>
+      <h3>برمجة عامة</h3>
+      <p>أساسيات المنطق والتسلسل</p>
+      <span class="badge">15 درس</span>
+    </div>
+    <div class="track">
+      <div class="emoji">🛡️</div>
+      <h3>الأمن السيبراني</h3>
+      <p>اكتشاف الفيروسات والتهديدات</p>
+      <span class="badge">جاري التجربة</span>
+    </div>
+    <div class="track">
+      <div class="emoji">🌐</div>
+      <h3>تطوير الويب</h3>
+      <p>بناء صفحات بسيطة</p>
+      <span class="badge">قريبًا</span>
+    </div>
+    <div class="track">
+      <div class="emoji">🎮</div>
+      <h3>تصميم الألعاب</h3>
+      <p>شخصيات وقصص تفاعلية</p>
+      <span class="badge">قريبًا</span>
+    </div>
+  </div>
+
+  <section class="lesson">
+    <h2>🛡️ أول درس: نظّف الشبكة من الفيروسات</h2>
+    <div class="sub">رتّب الأوامر (البلوكات) عشان توصّل اللاعب 🧑‍💻 من البداية للهدف 🏁 من غير ما يلمس أي فيروس 🦠</div>
+
+    <div class="age-selector" id="ageSelector">
+      <span>اختار سنّك:</span>
+      <button class="age-btn" data-age="7">7</button>
+      <button class="age-btn" data-age="8">8</button>
+      <button class="age-btn" data-age="9">9</button>
+      <button class="age-btn" data-age="10">10</button>
+    </div>
+
+    <div class="workspace">
+      <div class="blocks-panel">
+        <h4>الأوامر (اسحبها أو اضغط عليها)</h4>
+        <div id="blocksList"></div>
+      </div>
+
+      <div class="grid-panel">
+        <h4>برنامجك (اضغط على الأوامر عشان تضيفها)</h4>
+        <div class="program" id="program"></div>
+        <div class="ctrl">
+          <button class="btn-run" id="runBtn">▶ تشغيل</button>
+          <button class="btn-clear" id="clearBtn">🗑 مسح</button>
+        </div>
+      </div>
+
+      <div class="result-panel">
+        <h4>الخريطة</h4>
+        <div class="maze" id="maze"></div>
+        <div class="msg" id="msg"></div>
+      </div>
+    </div>
+    <div class="tip" id="tip">💡 نصيحة أمنية: لما تلاقي فيروس في طريقك، متفتحوش — دور على طريق تاني آمن!</div>
+  </section>
+
+  <footer>كودوسِك — نموذج أولي لعرض الفكرة فقط</footer>
+</main>
+
+<script src="../assets/js/game.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>علوم البرمجة — جهازي</title>
+<meta name="theme-color" content="#07080c">
+<link rel="stylesheet" href="../assets/css/cyber.css">
+<link rel="stylesheet" href="../assets/css/quest.css">
+<link rel="stylesheet" href="../assets/css/rig.css">
+</head>
+<body class="quest-page">
+
+<div class="quest-header">
+  <a class="back" href="../interactive.html">⟵ المركز</a>
+  <div class="title">🖥️ جهازي</div>
+  <span class="rig-coins-pill" id="rigCoinsPill">🪙 0</span>
+</div>
+
+<div class="quest-wrap">
+
+  <!-- حالة الجهاز الحالية + مقياس القوة -->
+  <div class="glass-panel glow-accent quest-fade" id="rigStatusCard">
+    <div class="rig-power-row">
+      <div class="rig-power-emoji" id="rigPowerEmoji">🐢</div>
+      <div style="flex:1;">
+        <div class="rig-power-label" id="rigPowerLabel">جهازك: ضعيف</div>
+        <div class="rig-power-bar-track"><div class="rig-power-bar-fill" id="rigPowerBar"></div></div>
+      </div>
+    </div>
+    <p class="quest-stage-desc" id="rigPowerHint" style="margin:10px 0 0;">
+      كل درس بتخلّصه — في بايثون أو السايبر سيكيورتي أو أي مكان في المنهج — بيدّيك عملات 🪙 تقدر تصرفها هنا عشان ترقّي جهازك.
+      بعض الأدوات المتقدمة في المنصة (زي nmap في التيرمينال) محتاجة جهاز أقوى عشان تشتغل من غير تحذير.
+    </p>
+  </div>
+
+  <!-- الترابيزة: عرض الجهاز الحالي بصريًا -->
+  <div class="glass-panel quest-fade">
+    <div class="quest-stage-title">🗄️ جهازك دلوقتي</div>
+    <div class="q-desk">
+      <div class="q-desk-caption">الكيس والمذربورد بتوعك</div>
+      <div class="q-board" id="rigBoard"></div>
+    </div>
+    <div class="rig-os-row" id="rigOsRow"></div>
+  </div>
+
+  <!-- متجر القطع -->
+  <div class="glass-panel quest-fade">
+    <div class="quest-stage-title">🛒 متجر القطع</div>
+    <p class="quest-stage-desc">رقّي أي قطعة بعملاتك. كل ترقية بتزوّد "قوة" جهازك وبتفتحلك أدوات أكتر في المنصة.</p>
+    <div class="rig-shop-list" id="rigShopList"></div>
+  </div>
+
+</div>
+
+<script src="../assets/js/icons-inject.js" data-base="../"></script>
+<script src="../assets/js/progress.js"></script>
+<script src="../assets/js/pc-parts-data.js"></script>
+<script src="../assets/js/rig-page.js"></script>
+</body>
+</html>

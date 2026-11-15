@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>علوم البرمجة — الوضع الكامل</title>
+<meta name="theme-color" content="#0b0c0f">
+<link rel="stylesheet" href="../assets/css/full.css">
+<link rel="stylesheet" href="../assets/css/v86-boot.css">
+</head>
+<body>
+
+<header>
+  <a href="../interactive.html">⟵ رجوع للرئيسية</a>
+  <div>🖥️ الوضع الكامل</div>
+</header>
+
+<main>
+  <h1>ثبّت بيئة لينكس حقيقية على جهازك</h1>
+  <p class="intro">اتبع الخطوات بالترتيب. كل سكريبت بيفتحلك شاشة نتيجة تلقائي لما يخلص.</p>
+
+  <nav class="menu">
+    <a href="#step-kali">1. تثبيت Kali Linux</a>
+    <a href="#step-ide">2. تثبيت الـ IDE + الإضافات</a>
+    <a href="success.html">3. شاشة النتيجة</a>
+  </nav>
+
+  <section class="card" id="step-kali">
+    <h3>1️⃣ Kali Linux</h3>
+
+    <div class="sub-card">
+      <h4>⚡ تشغيل مباشر جوه المتصفح (بدون تثبيت)</h4>
+      <p>عندك ملف Kali ISO؟ شغّله فورًا جوه المتصفح نفسه — مفيش أي تثبيت على الجهاز ولا إنترنت بعد أول مرة.</p>
+      <div id="v86Container"></div>
+    </div>
+
+    <div class="sub-card">
+      <h4>🪟 ويندوز (WSL)</h4>
+      <p>حمّل الملف وشغّله كـ Administrator. محتاج ويندوز 10/11 واتصال إنترنت.</p>
+      <code>wsl --install kali-linux</code>
+      <br><a class="dl-btn" href="install.bat" download>⬇️ تحميل install.bat</a>
+    </div>
+
+    <div class="sub-card">
+      <h4>🤖 أندرويد (Termux)</h4>
+      <p>ثبّت تطبيق <strong>Termux</strong> الأول من F-Droid (مش Google Play). بعدين شغّل السكريبت جواه.</p>
+      <code>pkg install proot-distro -y && proot-distro install kali</code>
+      <br><a class="dl-btn" href="setup.sh" download>⬇️ تحميل setup.sh</a>
+    </div>
+  </section>
+
+  <section class="card" id="step-ide">
+    <h3>2️⃣ IDE (VS Code) + الإضافات</h3>
+    <p>هيثبّت VS Code ويضيف إضافات البرمجة الأساسية (Python, Pylance, Code Runner, GitLens...) تلقائيًا.</p>
+    <code>winget install Microsoft.VisualStudioCode</code>
+    <br><a class="dl-btn" href="install-ide.bat" download>⬇️ تحميل install-ide.bat</a>
+
+    <div class="sub-card">
+      <h4>📦 مكتبة الإضافات</h4>
+      <p>عايز تزود أو تشيل إضافة؟ افتح الملف وعدّل براحتك — سطر لكل إضافة، والسكريبت بيقرأه تلقائي في المرة الجاية.</p>
+      <a class="dl-btn secondary" href="extensions.txt" download>📄 extensions.txt</a>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3>⚠️ ملاحظات</h3>
+    <p>
+      - التثبيت الكامل بياخد مساحة كبيرة نسبيًا (من 1 لـ 3 جيجا تقريبًا) — اتأكد من المساحة المتاحة الأول.<br>
+      - محتاج اتصال إنترنت وقت التثبيت بس (بعد كده بيشتغل أوفلاين).<br>
+      - لو مش عايز تثبت حاجة على جهازك، استخدم الوضع الخفيف أو الوسط بدل كده.
+    </p>
+  </section>
+</main>
+
+<script src="../assets/v86/libv86.js"></script>
+<script src="../assets/js/v86-boot.js"></script>
+<script src="../assets/js/progress.js"></script>
+<script>
+  if (window.V86Kudosk) {
+    window.V86Kudosk.mountV86Boot(document.getElementById('v86Container'), { v86BasePath: '../assets/v86/', defaultRam: 1024 });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+/* ============================================
+   ميني جيم "جوّه المعالج" - محاكاة Fetch-Decode-Execute
+   ============================================ */
+
+.cpu-instr-list{display:flex; flex-direction:column; gap:8px; direction:ltr;}
+.cpu-instr-line{
+  display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.04);
+  border:1px solid var(--q-glass-border); border-radius:10px; padding:10px 14px;
+  font-family:"Fira Code","Consolas",monospace; font-size:13px; color:var(--muted);
+  transition:border-color .2s, background .2s, transform .15s;
+}
+.cpu-instr-num{
+  width:20px; height:20px; min-width:20px; border-radius:50%; background:rgba(255,255,255,.08);
+  display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--text); font-family:inherit;
+}
+.cpu-instr-code{flex:1;}
+.cpu-instr-line.fetch{border-color:#38bdf8; background:rgba(56,189,248,.1); color:var(--text);}
+.cpu-instr-line.decode{border-color:#a855f7; background:rgba(168,85,247,.12); color:var(--text);}
+.cpu-instr-line.execute{border-color:#34d399; background:rgba(52,211,153,.14); color:var(--text); transform:translateX(-4px);}
+.cpu-instr-line.done{opacity:.55;}
+
+.cpu-reg-row{display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+.cpu-reg-box{
+  display:flex; flex-direction:column; align-items:center; gap:4px; min-width:76px;
+  background:rgba(255,255,255,.04); border:1px solid var(--q-glass-border); border-radius:12px; padding:12px 10px;
+  transition:box-shadow .3s, border-color .3s;
+}
+.cpu-reg-name{font-size:11px; color:var(--muted); font-family:"Fira Code",monospace;}
+.cpu-reg-val{font-size:18px; font-weight:bold; color:var(--text); direction:ltr; font-family:"Fira Code",monospace;}
+.cpu-reg-box.flash{border-color:#34d399; box-shadow:0 0 18px -2px rgba(52,211,153,.6); animation:cpuFlash .6s ease;}
+
+.cpu-mem-row{display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+.cpu-mem-cell{
+  display:flex; flex-direction:column; align-items:center; gap:4px; min-width:64px;
+  background:rgba(0,0,0,.25); border:1px dashed rgba(255,255,255,.18); border-radius:10px; padding:10px 8px;
+  transition:box-shadow .3s, border-color .3s;
+}
+.cpu-mem-addr{font-size:9.5px; color:var(--muted); direction:ltr; font-family:"Fira Code",monospace;}
+.cpu-mem-val{font-size:15px; font-weight:bold; color:var(--text); direction:ltr; font-family:"Fira Code",monospace;}
+.cpu-mem-cell.flash{border-style:solid; border-color:#f59e0b; box-shadow:0 0 18px -2px rgba(245,158,11,.6); animation:cpuFlash .6s ease;}
+
+@keyframes cpuFlash{
+  0%{transform:scale(1);}
+  40%{transform:scale(1.08);}
+  100%{transform:scale(1);}
+}
+
+.cpu-status{font-size:13px; color:var(--text); line-height:1.8; text-align:center; min-height:20px;}

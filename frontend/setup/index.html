@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>علوم البرمجة — جهّز جهازك</title>
+<link rel="manifest" href="../manifest.json">
+<link rel="icon" href="../icon-192.png">
+<meta name="theme-color" content="#0b0c0f">
+<link rel="stylesheet" href="../assets/css/index.css">
+<style>
+  .wrap{max-width:620px; margin:0 auto; padding:20px 18px 60px;}
+  header{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
+  header a{color:var(--muted); text-decoration:none; font-size:12px;}
+  header h1{font-size:17px; margin:0;}
+  .intro{font-size:12.5px; color:var(--muted); line-height:1.8; margin:0 0 22px;}
+
+  .sec-title{font-size:12.5px; color:var(--muted); margin:26px 0 10px; font-weight:bold;}
+  .sec-title:first-of-type{margin-top:0;}
+
+  .dl-card{
+    display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--text);
+    background:linear-gradient(135deg,#7c5cff 0%, #1fd1c9 100%); border-radius:14px; padding:16px;
+    box-shadow:0 14px 30px -14px rgba(124,92,255,.5);
+  }
+  .dl-card .ic{width:26px; height:26px; color:#fff;}
+  .dl-card .t{font-size:13.5px; font-weight:bold; color:#fff;}
+  .dl-card .s{font-size:11px; color:#fff; opacity:.85;}
+
+  .device-grid{display:grid; grid-template-columns:1fr; gap:10px;}
+  .device-card{
+    display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--text);
+    background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px;
+  }
+  .device-card .ic{width:26px; height:26px; min-width:26px;}
+  .device-card h3{font-size:13.5px; margin:0 0 3px;}
+  .device-card p{font-size:11.5px; color:var(--muted); margin:0; line-height:1.6;}
+  .device-card .arrow{margin-inline-start:auto; color:var(--muted); font-size:16px;}
+
+  .note{font-size:11px; color:var(--muted); line-height:1.8; background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-top:22px;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <a href="../interactive.html">→ الرئيسية</a>
+    <h1>⚙️ جهّز جهازك</h1>
+    <span style="width:60px;"></span>
+  </header>
+  <p class="intro">
+    من هنا تقدر تحمّل تطبيق المنصة، أو تجهّز بيئة الأمن السيبراني (Kali Linux)
+    على جهازك — اختار اللي يناسبك وابدأ.
+  </p>
+
+  <div class="sec-title">📲 التطبيق</div>
+  <a class="dl-card" href="../book/downloads/Programming-Science.apk" download="Programming-Science.apk">
+    <svg class="icon-svg ic"><use href="#ic-download"/></svg>
+    <div>
+      <div class="t">تحميل التطبيق</div>
+      <div class="s">نسخة أندرويد (APK)</div>
+    </div>
+  </a>
+
+  <div class="sec-title">🖥️ بيئة الأمن السيبراني — اختار جهازك</div>
+  <div class="device-grid">
+    <a class="device-card" href="../light/index.html">
+      <svg class="icon-svg ic" style="color:#1fd1c9"><use href="#ic-feather"/></svg>
+      <div>
+        <h3>خفيف</h3>
+        <p>موبايل بإمكانيات عادية — تيرمينال تدريبي داخل المتصفح، ولو جهازك قوي هيديك خيار تشغيل Kali حقيقي كمان.</p>
+      </div>
+      <span class="arrow">←</span>
+    </a>
+    <a class="device-card" href="../middle/index.html">
+      <svg class="icon-svg ic" style="color:#7c5cff"><use href="#ic-gear"/></svg>
+      <div>
+        <h3>وسط</h3>
+        <p>لابتوب أو موبايل قوي — توازن بين الأداء وسهولة التشغيل.</p>
+      </div>
+      <span class="arrow">←</span>
+    </a>
+    <a class="device-card" href="../full/index.html">
+      <svg class="icon-svg ic" style="color:#38bdf8"><use href="#ic-desktop"/></svg>
+      <div>
+        <h3>كامل</h3>
+        <p>جهاز كمبيوتر — تثبيت كامل لـKali Linux + IDE، أو تشغيل مباشر جوه المتصفح من ملف ISO.</p>
+      </div>
+      <span class="arrow">←</span>
+    </a>
+  </div>
+
+  <div class="note">
+    مش متأكد تختار إيه؟ أي خيار ممكن تجرّبه وترجع تغيّره تاني في أي وقت — مفيش قرار نهائي هنا.
+  </div>
+</div>
+
+<div class="quicknav">
+  <a class="active" href="index.html"><svg class="icon-svg" style="width:19px;height:19px"><use href="#ic-gear"/></svg><span>جهّز جهازك</span></a>
+  <a href="../library/python/index.html"><span class="ic" style="font-size:17px;">🐍</span><span>بايثون</span></a>
+  <a href="../profile.html"><svg class="icon-svg" style="width:19px;height:19px"><use href="#ic-grad"/></svg><span>صفحتي</span></a>
+</div>
+
+<script src="../assets/js/icons-inject.js" data-base="../"></script>
+
+</body>
+</html>

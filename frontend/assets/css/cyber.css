@@ -1,0 +1,311 @@
+:root{
+  --bg:#0b0c0f; --panel:#111317; --surface2:#171a21; --accent:#38bdf8; --accent2:#22c55e;
+  --danger:#ef4444; --text:#e6e8ee; --muted:#8a8f9c; --border:#23262e;
+}
+*{box-sizing:border-box;}
+html,body{height:100%; margin:0;}
+body{
+  background:var(--bg); color:var(--text); font-family:system-ui,sans-serif;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+header{
+  display:flex; align-items:center; justify-content:space-between; padding:10px 16px;
+  border-bottom:1px solid var(--border); background:var(--panel); position:sticky; top:0; z-index:5;
+  gap:10px; flex-wrap:wrap;
+}
+header a{color:var(--muted); text-decoration:none; font-size:13px;}
+.progress-pill{
+  background:var(--surface2); color:var(--accent); font-size:12px; padding:4px 12px; border-radius:20px;
+}
+
+/* توست XP/عملات/ميداليات (progress.js بيحقنه في أي صفحة - الستايل ده بيضمن إنه
+   يبان صح حتى في صفحات مسار السايبر اللي مش بتحمّل courses.css) */
+.ps-toast{
+  position:fixed; top:16px; inset-inline:0; margin:0 auto; width:fit-content; z-index:200;
+  display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
+  padding:9px 16px; border-radius:14px; background:#14161c; border:1px solid #2ecc7155;
+  box-shadow:0 10px 26px -8px rgba(0,0,0,.6);
+  opacity:0; transform:translateY(-14px); transition:opacity .25s, transform .25s;
+}
+.ps-toast.show{opacity:1; transform:translateY(0);}
+.ps-toast-xp{color:#2ecc71; font-weight:bold; font-size:13px;}
+.ps-toast-coins{color:#f5c518; font-weight:bold; font-size:13px;}
+.ps-toast-medal{color:#ffd166; font-size:13px;}
+main{max-width:880px; margin:0 auto; padding:24px 16px 60px;}
+
+/* ---- مركز الدروس ---- */
+.hub-intro{text-align:center; margin-bottom:26px;}
+.hub-intro h1{font-size:22px; margin:0 0 6px;}
+.hub-intro p{color:var(--muted); font-size:13px;}
+/* ===== مسار دروس على شكل "درجة سلم" (زي Duolingo) ===== */
+.lesson-path{position:relative; max-width:420px; margin:0 auto; padding:10px 0 40px;}
+.lesson-path::before{
+  content:""; position:absolute; top:10px; bottom:30px; inset-inline-start:50%;
+  width:4px; margin-inline-start:-2px; z-index:0;
+  background:repeating-linear-gradient(to bottom, #2a2d36 0 10px, transparent 10px 20px);
+}
+.lesson-node-row{position:relative; z-index:1; display:flex; margin-bottom:18px;}
+.lesson-node{
+  width:72px; height:72px; min-width:72px; border-radius:50%; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; text-decoration:none; position:relative;
+  background:#1c1f2e; border:3px solid #2a2d36; box-shadow:0 6px 16px -6px rgba(0,0,0,.5);
+  transition:transform .15s;
+}
+.lesson-node:not(.locked):active{transform:scale(.94);}
+.lesson-node .ic{font-size:26px; line-height:1;}
+.lesson-node .num{position:absolute; top:-6px; inset-inline-end:-6px; background:#0d0f13; border:2px solid #2a2d36; border-radius:50%; width:22px; height:22px; font-size:10px; display:flex; align-items:center; justify-content:center; color:var(--muted);}
+.lesson-node.locked{opacity:.45; cursor:not-allowed; filter:grayscale(1);}
+.lesson-node.done{background:linear-gradient(145deg,#2ecc71,#1fa860); border-color:#2ecc71;}
+.lesson-node.done .ic{color:#fff;}
+.lesson-node.current{
+  border-color:#7c5cff; background:linear-gradient(145deg,#7c5cff,#5a3fd6);
+  box-shadow:0 0 0 6px #7c5cff22, 0 10px 22px -8px rgba(124,92,255,.7);
+  animation:lessonPulse 1.8s ease-in-out infinite;
+}
+@keyframes lessonPulse{0%,100%{box-shadow:0 0 0 6px #7c5cff22, 0 10px 22px -8px rgba(124,92,255,.7);} 50%{box-shadow:0 0 0 10px #7c5cff11, 0 10px 26px -6px rgba(124,92,255,.85);}}
+.lesson-node-label{
+  position:absolute; top:50%; transform:translateY(-50%); white-space:nowrap;
+  font-size:12px; font-weight:700; color:var(--text); background:#14161c; border:1px solid #23262e;
+  border-radius:8px; padding:4px 10px;
+}
+.lesson-node-row.align-end{justify-content:flex-end;}
+.lesson-node-row.align-start{justify-content:flex-start;}
+.lesson-node-row.align-center{justify-content:center;}
+.lesson-node-row.align-end .lesson-node-label{inset-inline-end:84px;}
+.lesson-node-row.align-start .lesson-node-label{inset-inline-start:84px;}
+.lesson-node-row.align-center .lesson-node-label{top:auto; bottom:-24px; transform:none; font-size:10.5px; padding:2px 8px;}
+.lesson-start-flag{
+  display:flex; flex-direction:column; align-items:center; gap:4px; margin-bottom:22px; color:var(--muted); font-size:12px;
+}
+.lesson-start-flag .flag-ic{font-size:30px;}
+
+.lesson-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px;}
+.lesson-card{
+  background:var(--panel); border:1px solid var(--border); border-radius:14px;
+  padding:16px; text-decoration:none; color:var(--text); position:relative; transition:transform .15s;
+}
+.lesson-card:not(.locked):hover{transform:translateY(-3px); border-color:var(--accent);}
+.lesson-card.locked{opacity:.4; cursor:not-allowed;}
+.lesson-card.done{border-color:var(--accent2);}
+.lesson-num{font-size:11px; color:var(--muted);}
+.lesson-emoji{font-size:26px; margin:4px 0;}
+.lesson-title{font-size:13px; font-weight:700; margin-bottom:4px;}
+.lesson-desc{font-size:11px; color:var(--muted); line-height:1.5;}
+.lesson-badge{position:absolute; top:12px; left:12px; font-size:16px;}
+
+/* ---- صفحة الدرس ---- */
+.lesson-intro{text-align:center; margin-bottom:20px;}
+.lesson-intro h1{font-size:19px; margin:0 0 6px;}
+.lesson-intro p{color:var(--muted); font-size:13px;}
+.lesson-done-panel{
+  display:none; flex-direction:column; align-items:center; gap:10px; margin-top:24px;
+  background:var(--panel); border:1px solid var(--accent2); border-radius:14px; padding:20px; text-align:center;
+}
+
+/* ---- عناصر المحرك (متاهة) ---- */
+.eng-workspace{display:grid; grid-template-columns:1fr; gap:16px;}
+@media(min-width:720px){ .eng-workspace{grid-template-columns:220px 1fr 240px;} }
+.eng-blocks-panel, .eng-grid-panel, .eng-result-panel{
+  background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:14px;
+}
+.eng-blocks-panel h4, .eng-grid-panel h4, .eng-result-panel h4{margin:0 0 10px; font-size:12px; color:var(--muted);}
+.eng-block-btn{
+  display:flex; align-items:center; gap:8px; width:100%; margin-bottom:8px;
+  padding:9px 12px; border-radius:10px; border:1px solid var(--border); background:var(--panel);
+  color:var(--text); font-size:13px; cursor:pointer; text-align:right; font-family:inherit;
+}
+.eng-block-btn:hover{border-color:var(--accent);}
+.eng-program{min-height:50px; display:flex; flex-direction:column; gap:6px; margin-bottom:10px;}
+.eng-step{
+  display:flex; align-items:center; justify-content:space-between;
+  background:var(--accent); color:#031018; padding:7px 10px; border-radius:8px; font-size:12px;
+}
+.eng-step button{background:none; border:none; color:#031018; cursor:pointer;}
+.eng-ctrl{display:flex; gap:8px;}
+.eng-btn-run, .eng-btn-clear{
+  flex:1; padding:9px; border-radius:10px; border:none; cursor:pointer; font-weight:700; font-size:13px;
+  text-align:center; text-decoration:none; display:inline-block;
+}
+.eng-btn-run{background:var(--accent2); color:#06200f;}
+.eng-btn-clear{background:var(--panel); color:var(--text); border:1px solid var(--border)!important;}
+.eng-maze{display:grid; gap:4px; aspect-ratio:1/1; max-width:240px; margin:0 auto;}
+.eng-cell{
+  background:var(--panel); border-radius:6px; display:flex; align-items:center; justify-content:center;
+  font-size:16px; border:1px solid var(--border);
+}
+.eng-goal{background:rgba(34,197,94,.15);}
+.eng-threat{background:rgba(239,68,68,.12);}
+.eng-msg{min-height:60px; font-size:12px; line-height:1.6; margin-top:8px;}
+.eng-success{color:var(--accent2);}
+.eng-fail{color:var(--danger);}
+
+/* ---- عناصر المحرك (اختبار) ---- */
+.eng-quiz{background:var(--surface2); border:1px solid var(--border); border-radius:14px; padding:22px;}
+.eng-quiz-progress{font-size:11px; color:var(--muted); margin-bottom:8px;}
+.eng-quiz-q{font-size:16px; margin:0 0 16px;}
+.eng-quiz-options{display:flex; flex-direction:column; gap:8px;}
+.eng-quiz-opt{
+  padding:12px 14px; border-radius:10px; border:1px solid var(--border); background:var(--panel);
+  color:var(--text); text-align:right; cursor:pointer; font-size:13px; font-family:inherit;
+}
+.eng-quiz-opt:hover:not(:disabled){border-color:var(--accent);}
+.eng-quiz-opt:disabled{cursor:default;}
+.eng-quiz-opt.eng-correct{border-color:var(--accent2); background:rgba(34,197,94,.12);}
+.eng-quiz-opt.eng-wrong{border-color:var(--danger); background:rgba(239,68,68,.12);}
+.eng-quiz-feedback{margin-top:14px; font-size:13px; line-height:1.6;}
+.eng-quiz .eng-btn-run{margin-top:16px; width:100%;}
+
+/* ---- بطاقات المعلومات ---- */
+.eng-card-wrap{background:var(--surface2); border:1px solid var(--border); border-radius:14px; padding:22px;}
+.eng-card-progress{font-size:11px; color:var(--muted); margin-bottom:10px;}
+.eng-card{min-height:140px;}
+.eng-card-emoji{font-size:30px; margin-bottom:8px;}
+.eng-card-title{font-size:16px; margin:0 0 10px;}
+.eng-card-body{font-size:13px; line-height:1.8; color:var(--text);}
+.eng-card-nav{display:flex; gap:8px; margin-top:18px;}
+
+/* ---- سيناريوهات واقعية (SMS / إيميل / مكالمة / رسالة لعبة) ---- */
+.eng-mock{border-radius:12px; padding:14px 16px; margin-bottom:16px; font-size:12.5px; line-height:1.8; border:1px solid var(--border);}
+.eng-mock-head{font-weight:bold; margin-bottom:6px; font-size:12px;}
+.eng-mock-body{color:var(--text); white-space:pre-wrap;}
+.eng-mock-sms{background:#1c2a1f; border-color:#2ecc7133;}
+.eng-mock-email{background:#1a1d24; border-color:var(--border);}
+.eng-mock-dm{background:#241a2e; border-color:#7c5cff33;}
+.eng-mock-call{background:#241a1a; border-color:#ef444433; text-align:center;}
+.eng-mock-call-ic{font-size:30px; margin-bottom:6px;}
+.eng-mock-call-from{font-weight:bold; margin-bottom:8px;}
+
+/* ---- تحدي تيرمينال (البحث عن flag) ---- */
+.eng-term-wrap{display:flex; flex-direction:column; gap:10px;}
+.eng-term-brief{font-size:12.5px; color:var(--muted); line-height:1.8; margin:0;}
+.eng-term{
+  background:#0a0b0d; border:1px solid var(--border); border-radius:12px; padding:12px 14px;
+  font-family:'Courier New',monospace; font-size:12.5px; direction:ltr; text-align:left;
+  max-height:260px; overflow-y:auto; cursor:text;
+}
+.eng-term-lines{display:flex; flex-direction:column; gap:2px;}
+.eng-term-line{color:#d7dae0; white-space:pre-wrap; word-break:break-word;}
+.eng-term-line.eng-term-echo{color:#7dd3fc;}
+.eng-term-line.eng-term-err{color:#f87171;}
+.eng-term-inrow{display:flex; align-items:center; gap:6px; margin-top:4px;}
+.eng-term-prompt{color:#4ade80; white-space:nowrap;}
+.eng-term-input{
+  flex:1; background:transparent; border:none; outline:none; color:#fff;
+  font-family:inherit; font-size:12.5px; direction:ltr;
+}
+.eng-term-answer-row{display:flex; gap:8px;}
+.eng-term-answer{
+  flex:1; background:var(--panel); border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; color:var(--text); font-family:inherit; font-size:13px;
+}
+.eng-term-answer-row .eng-btn-run{width:auto; padding:0 18px; white-space:nowrap;}
+
+/* ====== شكل غرفة TryHackMe: Sidebar + مهام متعددة ====== */
+.thm-room-layout{display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap;}
+.thm-main{flex:2; min-width:260px;}
+.thm-sidebar{flex:1; min-width:220px; max-width:300px; position:sticky; top:66px; display:flex; flex-direction:column; gap:12px;}
+.thm-room-card{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:16px; text-align:center;}
+.thm-room-emoji{font-size:32px; margin-bottom:6px;}
+.thm-room-title{font-weight:bold; font-size:14px; margin-bottom:10px;}
+.thm-room-meta{display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;}
+.thm-diff-badge{font-size:11px; font-weight:bold; padding:3px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface2); color:var(--muted);}
+.thm-points{font-size:11px; font-weight:bold; color:var(--accent2); background:rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.3); padding:3px 12px; border-radius:20px;}
+.thm-tasks-panel{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px;}
+.thm-tasks-head{font-size:12px; color:var(--muted); margin-bottom:10px; font-weight:bold;}
+.thm-task-sidelist{display:flex; flex-direction:column; gap:8px;}
+.thm-task-siderow{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text); background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:8px 10px;}
+.thm-task-check{font-size:13px;}
+@media (max-width: 760px){ .thm-sidebar{position:static; max-width:none; order:-1;} }
+
+.eng-term-tasks{display:flex; flex-direction:column; gap:12px;}
+.eng-term-task{background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:12px 14px;}
+.eng-term-task.eng-task-done{border-color:var(--accent2);}
+.eng-task-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
+.eng-task-num{font-size:11px; color:var(--accent); font-weight:bold;}
+.eng-task-status{font-size:14px;}
+.eng-task-q{font-size:13px; margin-bottom:8px; line-height:1.6;}
+
+/* ---- شارة الستريك (أيام متتالية) ---- */
+.streak-badge{
+  display:flex; align-items:center; gap:4px; background:var(--panel); border:1px solid var(--border);
+  border-radius:999px; padding:5px 10px; font-size:12px; font-weight:bold; color:var(--text);
+}
+.streak-badge .flame{font-size:14px;}
+.streak-badge.lit{border-color:#f59e0b55; background:rgba(245,158,11,.1); color:#f59e0b;}
+
+/* ---- لعبة تركيب الـPC (سحب وإفلات) ---- */
+.pcbuild-wrap{max-width:460px; margin:0 auto; padding:16px;}
+.pcbuild-intro{font-size:12.5px; color:var(--muted); line-height:1.8; margin-bottom:16px;}
+.pcbuild-board{
+  position:relative; background:#14161c; border:2px dashed var(--border); border-radius:16px;
+  padding:16px; min-height:360px; margin-bottom:18px;
+}
+.pcbuild-slot{
+  position:absolute; width:84px; height:64px; border:2px dashed var(--border); border-radius:10px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10.5px;
+  color:var(--muted); text-align:center; padding:4px;
+}
+.pcbuild-slot.over{border-color:var(--accent); background:rgba(56,189,248,.1);}
+.pcbuild-slot.filled{border-style:solid; border-color:var(--accent2); background:rgba(34,197,94,.12); color:var(--text);}
+.pcbuild-slot .slot-label{font-size:9.5px; color:var(--muted); margin-top:2px;}
+.pcbuild-tray{display:flex; flex-wrap:wrap; gap:10px; justify-content:center;}
+.pcbuild-piece{
+  width:76px; height:60px; background:var(--panel); border:1px solid var(--border); border-radius:10px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px;
+  color:var(--text); cursor:grab; user-select:none; gap:3px; touch-action:none;
+}
+.pcbuild-piece .pc-ic{font-size:20px;}
+.pcbuild-piece.placed{opacity:.25; pointer-events:none;}
+.pcbuild-piece.dragging{opacity:.6; transform:scale(1.05);}
+.pcbuild-feedback{text-align:center; font-size:13px; margin-top:10px; min-height:20px;}
+.pcbuild-done{
+  text-align:center; padding:30px 16px; display:none; flex-direction:column; align-items:center; gap:10px;
+}
+
+/* ---- مراحل الحادثة بعد التركيب: فتح الكيسة + تسليم الرسالة ---- */
+.pcbuild-phase{animation:pcbuildFadeIn .35s ease;}
+@keyframes pcbuildFadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+.pcbuild-case{
+  text-align:center; background:var(--panel); border:1px solid var(--border); border-radius:16px;
+  padding:28px 18px;
+}
+.pcbuild-note{
+  background:#14161c; border:1px solid var(--accent2); border-radius:14px; padding:16px;
+}
+.pcbuild-note .note-head{font-size:13px; font-weight:bold; color:var(--accent2); margin-bottom:10px;}
+.pcbuild-note .note-body{font-size:12.5px; line-height:1.9; color:var(--text); white-space:pre-line;}
+.pcbuild-npcs{display:flex; flex-direction:column; gap:10px;}
+.pcbuild-npc{
+  display:flex; align-items:center; gap:12px; text-align:start; width:100%;
+  background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:12px 14px;
+  color:var(--text); font-family:inherit; cursor:pointer; transition:border-color .15s, transform .1s;
+}
+.pcbuild-npc:not(:disabled):hover{border-color:var(--accent); transform:translateY(-2px);}
+.pcbuild-npc:disabled{cursor:default; opacity:.7;}
+.pcbuild-npc .npc-ic{font-size:22px;}
+.pcbuild-npc .npc-name{font-size:13px; font-weight:bold; min-width:46px;}
+.pcbuild-npc .npc-role{font-size:11.5px; color:var(--muted); margin-inline-start:auto; text-align:end;}
+.pcbuild-npc.npc-correct{border-color:var(--accent2); background:rgba(34,197,94,.12);}
+.pcbuild-npc.npc-wrong{border-color:var(--danger); background:rgba(239,68,68,.12);}
+
+/* ---- لافتة فاصلة بين مستويات المنهج (مبتدئين / متوسطين) ---- */
+.level-divider{
+  position:relative; z-index:1; margin:26px 0 20px; text-align:center;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+}
+.level-divider::before{
+  content:""; position:absolute; top:50%; inset-inline:0; height:1px; background:var(--border); z-index:-1;
+}
+.level-divider .lv-emoji{
+  font-size:22px; background:var(--bg); display:inline-block; line-height:1;
+}
+.level-divider .lv-title{
+  font-size:13px; font-weight:bold; color:var(--accent); background:var(--bg); padding:2px 14px;
+}
+.level-divider .lv-desc{
+  font-size:10.5px; color:var(--muted); background:var(--bg); padding:0 14px; max-width:280px;
+}
+.level-divider .lv-count{
+  font-size:10px; font-weight:bold; color:var(--accent); background:var(--surface2); padding:3px 12px;
+  border-radius:20px; margin-top:4px;
+}

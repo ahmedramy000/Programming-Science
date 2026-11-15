@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>علوم البرمجة — الرئيسية</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#0b0c0f">
+<link rel="stylesheet" href="assets/css/index.css">
+<style>
+  .hub-wrap{max-width:640px; margin:0 auto; padding:22px 18px 110px;}
+
+  .hub-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:22px;}
+  .hub-header h1{font-size:19px; margin:0 0 3px;}
+  .hub-header .sub{font-size:12px; color:var(--muted);}
+  .hub-level{display:flex; align-items:center; gap:8px; background:var(--panel); border:1px solid var(--border); border-radius:20px; padding:7px 14px;}
+  .hub-level .badge{width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#ffd166,#f77f00); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:bold; color:#2a1a00;}
+  .hub-level .xp{font-size:11px; color:var(--muted);}
+
+  .hub-feature{
+    display:block; text-decoration:none; color:#fff; border-radius:18px; padding:24px 20px; margin-bottom:16px;
+    background:linear-gradient(135deg,#7c5cff 0%, #1fd1c9 100%); box-shadow:0 14px 30px -14px rgba(124,92,255,.6);
+    position:relative; overflow:hidden;
+  }
+  .hub-feature .ic{width:34px; height:34px; margin-bottom:10px;}
+  .hub-feature h2{font-size:17px; margin:0 0 6px;}
+  .hub-feature p{font-size:12.5px; margin:0; opacity:.92; line-height:1.7; max-width:80%;}
+  .hub-feature .arrow{position:absolute; inset-inline-end:20px; top:50%; transform:translateY(-50%); font-size:22px; opacity:.6;}
+
+  .hub-row{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:22px;}
+  .hub-card{
+    display:flex; flex-direction:column; gap:8px; text-decoration:none; color:var(--text);
+    background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:16px;
+  }
+  .hub-card .ic{width:24px; height:24px; color:var(--accent);}
+  .hub-card h3{font-size:13px; margin:0;}
+  .hub-card p{font-size:11px; color:var(--muted); margin:0; line-height:1.6;}
+
+  .hub-setup{
+    display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--text);
+    background:var(--panel); border:1px dashed var(--border); border-radius:14px; padding:14px 16px; margin-bottom:18px;
+  }
+  .hub-setup .ic{width:22px; height:22px; min-width:22px; color:var(--accent2);}
+  .hub-setup .t{font-size:12.5px; font-weight:bold;}
+  .hub-setup .s{font-size:10.5px; color:var(--muted); line-height:1.5;}
+  .hub-setup .arrow{margin-inline-start:auto; color:var(--muted); font-size:15px;}
+</style>
+</head>
+<body>
+
+<div class="hub-wrap">
+  <div class="hub-header">
+    <div>
+      <h1>أهلًا بيك 👋</h1>
+      <div class="sub">يلا نكمل من حيث وقفت</div>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+      <a class="hub-level" href="profile.html" id="hubLevel">
+        <span class="badge" id="hubLevelNum">1</span>
+        <span class="xp" id="hubXpLabel">0 XP</span>
+      </a>
+      <span class="streak-badge" id="streakBadge"><span class="flame">🔥</span><span>...</span></span>
+    </div>
+  </div>
+
+  <a class="hub-setup" href="start/index.html" id="hubStartLink" style="display:none; border-style:solid; border-color:var(--accent2);">
+    <span class="ic" style="font-size:22px; min-width:22px;">🚀</span>
+    <div>
+      <div class="t">أول مرة هنا؟ ابدأ من هنا</div>
+      <div class="s">اختبار تحديد مستوى سريع (اختياري) يديك عملات بونص لجهازك</div>
+    </div>
+    <span class="arrow">←</span>
+  </a>
+
+  <a class="hub-setup" href="setup/index.html">
+    <svg class="icon-svg ic"><use href="#ic-gear"/></svg>
+    <div>
+      <div class="t">⚙️ جهّز جهازك</div>
+      <div class="s">تحميل التطبيق + اختيار بيئة الأمن السيبراني</div>
+    </div>
+    <span class="arrow">←</span>
+  </a>
+
+  <a class="hub-setup" href="rig/index.html" id="hubRigLink">
+    <span class="ic" style="font-size:22px; min-width:22px;">🖥️</span>
+    <div>
+      <div class="t">جهازي — متجر القطع</div>
+      <div class="s" id="hubRigSub">رقّي جهازك الافتراضي بعملاتك وافتح أدوات أكتر</div>
+    </div>
+    <span class="arrow">←</span>
+  </a>
+
+  <a class="hub-feature" href="courses/index.html">
+    <svg class="icon-svg ic"><use href="#ic-stack"/></svg>
+    <h2>المنهج الدراسي</h2>
+    <p>اتكلم مع بيكسل، اتعلم البرمجة بقصص وتمارين كود حقيقية.</p>
+    <span class="arrow">←</span>
+  </a>
+
+  <div class="hub-row">
+    <a class="hub-card" href="library/index.html">
+      <svg class="icon-svg ic"><use href="#ic-stack"/></svg>
+      <h3>الكورسات</h3>
+      <p>بايثون، سايبر سيكيورتي، وغيرها — بتتضاف تدريجيًا</p>
+    </a>
+    <a class="hub-card" href="editor/index.html">
+      <svg class="icon-svg ic"><use href="#ic-desktop"/></svg>
+      <h3>المحرر الحر</h3>
+      <p>IDE لـ12 لغة برمجة</p>
+    </a>
+  </div>
+
+  <div class="hub-row">
+    <a class="hub-card" href="cyber/index.html">
+      <svg class="icon-svg ic"><use href="#ic-shield"/></svg>
+      <h3>الأمن السيبراني</h3>
+      <p>مسار من الأساسيات لحد الاحتراف</p>
+    </a>
+    <a class="hub-card" href="scratch/index.html">
+      <svg class="icon-svg ic"><use href="#ic-yarn"/></svg>
+      <h3>Scratch</h3>
+      <p>برمجة بالسحب والإفلات</p>
+    </a>
+  </div>
+
+</div>
+
+<div class="quicknav">
+  <a href="setup/index.html"><svg class="icon-svg" style="width:19px;height:19px"><use href="#ic-gear"/></svg><span>جهّز جهازك</span></a>
+  <a href="library/python/index.html"><span class="ic" style="font-size:17px;">🐍</span><span>بايثون</span></a>
+  <a href="profile.html"><svg class="icon-svg" style="width:19px;height:19px"><use href="#ic-grad"/></svg><span>صفحتي</span></a>
+</div>
+
+<script src="assets/js/icons-inject.js"></script>
+<script src="assets/js/progress.js"></script>
+<script src="assets/js/index.js"></script>
+<script>
+  if (window.PSProgress) {
+    const p = PSProgress.load();
+    const lvl = PSProgress.levelOf(p.xp);
+    document.getElementById('hubLevelNum').textContent = lvl;
+    document.getElementById('hubXpLabel').textContent = `${p.xp || 0} XP`;
+    PSProgress.renderStreakBadge('streakBadge');
+    const rigSub = document.getElementById('hubRigSub');
+    if (rigSub) {
+      const coins = PSProgress.getRigCoins();
+      const tierInfo = PSProgress.getRigTierInfo();
+      rigSub.textContent = `${tierInfo.emoji} جهازك: ${tierInfo.label} — عندك 🪙 ${coins}`;
+    }
+    // كارت "ابدأ من هنا" يظهر بس لحد لسه ماخدش الاختبار ولسه مامشاش في أي درس
+    const startLink = document.getElementById('hubStartLink');
+    if (startLink && !PSProgress.isPlacementTestTaken() && !(p.lessonsCompleted > 0)) {
+      startLink.style.display = 'flex';
+    }
+  }
+</script>
+
+</body>
+</html>

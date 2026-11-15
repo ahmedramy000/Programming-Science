@@ -1,0 +1,16 @@
+{
+  "name": "علوم البرمجة",
+  "short_name": "علوم البرمجة",
+  "description": "منصة علوم البرمجة التفاعلية — منهج دراسي ومسارات برمجة وأمن سيبراني بالتعلّم باللعب",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1221",
+  "theme_color": "#7c5cff",
+  "orientation": "portrait-primary",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

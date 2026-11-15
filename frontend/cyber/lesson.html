@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>علوم البرمجة — الدرس</title>
+<meta name="theme-color" content="#0b0c0f">
+<link rel="stylesheet" href="../assets/css/cyber.css">
+</head>
+<body>
+
+<header>
+  <a href="index.html">⟵ المركز</a>
+  <div id="lessonHeaderTitle">...</div>
+  <span class="thm-diff-badge" id="headerDiffBadge"></span>
+</header>
+
+<main class="thm-room-layout">
+  <div class="thm-main">
+    <div class="lesson-intro">
+      <h1 id="lessonTitle"></h1>
+      <p id="lessonDesc"></p>
+    </div>
+    <div id="engineContainer"></div>
+    <div class="lesson-done-panel" id="doneBanner" style="display:none;">
+      <div id="doneText"></div>
+      <a id="nextBtn" class="eng-btn-run" href="#">الدرس الجاي ←</a>
+      <a class="eng-btn-clear" href="index.html">رجوع للمركز</a>
+    </div>
+  </div>
+
+  <aside class="thm-sidebar" id="thmSidebar">
+    <div class="thm-room-card">
+      <div class="thm-room-emoji" id="sideEmoji">🛡️</div>
+      <div class="thm-room-title" id="sideTitle">...</div>
+      <div class="thm-room-meta">
+        <span class="thm-diff-badge" id="sideDiffBadge"></span>
+        <span class="thm-points" id="sidePoints">+10 XP</span>
+      </div>
+    </div>
+    <div class="thm-tasks-panel">
+      <div class="thm-tasks-head">📋 مهام الغرفة</div>
+      <div id="sideTaskList" class="thm-task-sidelist"></div>
+    </div>
+  </aside>
+</main>
+
+<script src="../assets/js/icons-inject.js" data-base="../"></script>
+<script src="../assets/js/cyber-lessons.js"></script>
+<script src="../assets/js/cyber-engine.js"></script>
+<script src="../assets/js/progress.js"></script>
+<script src="../assets/js/cyber-lesson-player.js"></script>
+</body>
+</html>

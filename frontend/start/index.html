@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>علوم البرمجة — ابدأ هنا</title>
+<meta name="theme-color" content="#07080c">
+<link rel="stylesheet" href="../assets/css/cyber.css">
+<link rel="stylesheet" href="../assets/css/quest.css">
+</head>
+<body class="quest-page">
+
+<div class="quest-header">
+  <a class="back" href="../interactive.html">⟵ المركز</a>
+  <div class="title">🚀 ابدأ هنا</div>
+  <span></span>
+</div>
+
+<div class="quest-wrap">
+
+  <!-- اختيار البداية -->
+  <div class="glass-panel glow-accent quest-fade" id="startPicker">
+    <div class="quest-stage-title">قبل ما تبدأ... جهازك الافتراضي هيبدأ إزاي؟</div>
+    <p class="quest-stage-desc">
+      عندك "جهاز افتراضي" (جهازي 🖥️) هيكبر معاك كل ما تتعلم أكتر. تقدر تبدأه بجهاز بسيط عادي،
+      أو تاخد اختبار سريع (5 أسئلة بس) وكل إجابة صح هتديك عملات 🪙 بونص تبدأ بيها أقوى.
+    </p>
+    <div class="fr-type-grid" style="gap:12px;">
+      <button type="button" class="fr-type-card" id="startBeginnerBtn">
+        <span class="fr-type-ic">🌱</span>
+        <span class="fr-type-name">ابدأ كمبتدئ تمامًا</span>
+        <span class="fr-type-desc">تبدأ بجهاز بسيط زي أي حد جديد، وتكبّره بنفسك من المنهج.</span>
+      </button>
+      <button type="button" class="fr-type-card" id="startQuizBtn">
+        <span class="fr-type-ic">⚡</span>
+        <span class="fr-type-name">اختبار تحديد المستوى السريع</span>
+        <span class="fr-type-desc">5 أسئلة بسيطة (بايثون + أمن سيبراني + عتاد) — كل إجابة صح = 20 🪙 بونص. مرة واحدة بس.</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- الأسئلة -->
+  <div class="glass-panel quest-fade" id="quizStage" style="display:none;">
+    <div class="quest-stage-title">
+      <span class="num" id="quizNum">1</span> سؤال <span id="quizIdxLabel">1</span> من <span id="quizTotalLabel">5</span>
+    </div>
+    <p class="quest-stage-desc" id="quizQuestionText" style="font-size:14px; color:var(--text); font-weight:bold;"></p>
+    <div id="quizOptions" style="display:flex; flex-direction:column; gap:10px;"></div>
+    <div class="q-term-hint" id="quizFeedback" style="min-height:18px;"></div>
+    <button class="q-btn block" id="quizNextBtn" type="button" style="display:none; margin-top:10px;">السؤال الجاي ←</button>
+  </div>
+
+  <!-- النتيجة -->
+  <div class="glass-panel glow-accent q-done quest-fade" id="quizResult" style="display:none;">
+    <div class="trophy">🎉</div>
+    <h2 style="margin:0;" id="quizResultTitle">جاوبت صح في كذا سؤال!</h2>
+    <p style="color:var(--muted); font-size:13px; max-width:320px; margin:0;" id="quizResultDesc"></p>
+    <a class="q-btn" href="../rig/index.html">يلا شوف جهازك 🖥️</a>
+    <a class="q-btn" style="background:linear-gradient(135deg,#f59e0b,#f472b6);" href="../interactive.html">ابدأ المنهج ←</a>
+  </div>
+
+  <!-- لو اخد الاختبار قبل كده -->
+  <div class="glass-panel q-done quest-fade" id="alreadyDoneCard" style="display:none;">
+    <div class="trophy">✅</div>
+    <h2 style="margin:0;">خدت اختبار تحديد المستوى قبل كده</h2>
+    <p style="color:var(--muted); font-size:13px; max-width:320px; margin:0;">الاختبار بيتاخد مرة واحدة بس عشان مايبقاش طريقة لتكرار العملات. كمّل من المنهج أو شوف جهازك.</p>
+    <a class="q-btn" href="../rig/index.html">جهازي 🖥️</a>
+    <a class="q-btn" style="background:linear-gradient(135deg,#f59e0b,#f472b6);" href="../interactive.html">ابدأ المنهج ←</a>
+  </div>
+
+</div>
+
+<script src="../assets/js/icons-inject.js" data-base="../"></script>
+<script src="../assets/js/progress.js"></script>
+<script src="../assets/js/start-quiz.js"></script>
+</body>
+</html>

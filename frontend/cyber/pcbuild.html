@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>علوم البرمجة — المهمة الأولى: جهّز وشغّل جهازك</title>
+<meta name="theme-color" content="#07080c">
+<link rel="stylesheet" href="../assets/css/cyber.css">
+<link rel="stylesheet" href="../assets/css/quest.css">
+</head>
+<body class="quest-page">
+
+<div class="quest-header">
+  <a class="back" href="index.html">⟵ المركز</a>
+  <div class="title">🖥️ المهمة الأولى: جهّز وشغّل جهازك</div>
+  <span></span>
+</div>
+
+<div class="quest-wrap">
+
+  <!-- بيكسل: المرشد الافتراضي - بيتكلم طول المهمة -->
+  <div class="glass-panel glow-accent pixel-panel quest-fade">
+    <div class="pixel-avatar">🤖</div>
+    <div style="flex:1;">
+      <div class="pixel-name">بيكسل</div>
+      <div class="pixel-bubble" id="pixelMsg">أهلًا بيك! 👋 أنا بيكسل، هكون معاك خطوة بخطوة. مهمتك النهاردة: جهاز زبون واصلك مفكوك بالكامل — جمّعه، شغّله، وابعت تقرير بالمشكلة اللي هتلاقيها جوّاه للزميلة المسؤولة.</div>
+    </div>
+  </div>
+
+  <!-- المرحلة 1: التجميع -->
+  <div class="glass-panel quest-fade" id="qStageBuild">
+    <div class="quest-stage-title"><span class="num">1</span> جمّع أجزاء الجهاز</div>
+    <p class="quest-stage-desc">اسحب كل قطعة وحطّها في مكانها الصح فوق على المذربورد جوّه الكيس. دوس وسيب إصبعك ماسك القطعة وانت بتسحب.</p>
+    <div class="q-desk">
+      <div class="q-desk-caption">🗄️ الترابيزة — كيس مفتوح وجواه المذربورد</div>
+      <div class="q-board" id="pcBoard"></div>
+    </div>
+    <div class="q-tray" id="pcTray"></div>
+    <div class="pcbuild-feedback" id="pcFeedback"></div>
+  </div>
+
+  <!-- المرحلة 2: التشغيل -->
+  <div class="glass-panel quest-fade" id="qStagePower" style="display:none; text-align:center;">
+    <div class="quest-stage-title" style="justify-content:center;"><span class="num">2</span> شغّل الجهاز</div>
+    <p class="quest-stage-desc">الجهاز اتجمّع بالكامل! دوس على زرار التشغيل.</p>
+    <button class="q-power-btn" id="pcPowerBtn" type="button" title="تشغيل">⏻</button>
+  </div>
+
+  <!-- المرحلة 3: شاشة الإقلاع (BIOS/Terminal) -->
+  <div class="glass-panel quest-fade" id="qStageBoot" style="display:none;">
+    <div class="quest-stage-title"><span class="num">3</span> الجهاز بيقلّع...</div>
+    <div class="q-term-shell" id="bootTerm"><div id="bootLines"></div></div>
+  </div>
+
+  <!-- المرحلة 4: المهمة البرمجية - ابعت التقرير -->
+  <div class="glass-panel quest-fade" id="qStageTask" style="display:none;">
+    <div class="quest-stage-title"><span class="num">4</span> ابعت تقرير المشكلة</div>
+    <p class="quest-stage-desc">
+      جوّه الجهاز لقيت ملف <code style="direction:ltr; display:inline-block;">report.txt</code> فيه تفاصيل مشكلة أمنية.
+      استخدم التيرمينال تحت: اكتب <code style="direction:ltr; display:inline-block;">cat report.txt</code> عشان تشوف المشكلة، و<code style="direction:ltr; display:inline-block;">cat contacts.txt</code> عشان تعرف مين الزميل الصح المسؤول دلوقتي، وبعدين ابعت التقرير بأمر <code style="direction:ltr; display:inline-block;">mail</code>.
+    </p>
+    <div class="q-term-shell" id="taskTerm">
+      <div id="taskLines"></div>
+      <div class="q-term-inrow">
+        <span class="q-term-prompt">zabon@kudosk:~$</span>
+        <input class="q-term-input" id="taskInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type a command...">
+      </div>
+    </div>
+    <div class="q-term-hint" id="taskHint">💡 تلميح: جرّب <span style="direction:ltr; display:inline-block;">ls</span> الأول عشان تشوف إيه الملفات الموجودة.</div>
+  </div>
+
+  <!-- النهاية -->
+  <div class="glass-panel glow-accent q-done" id="pcDone" style="display:none;">
+    <div class="trophy">🏆</div>
+    <h2 style="margin:0;">بعت التقرير بنجاح!</h2>
+    <p style="color:var(--muted); font-size:13px; max-width:320px; margin:0;">
+      جمّعت الجهاز، شغّلته، واستخدمت التيرمينال عشان تبلّغ الشخص الصح — أول مهمة في مسار الأمن السيبراني خلصت 🎉
+    </p>
+    <a class="q-btn" href="index.html">كمّل مسار الأمن السيبراني ←</a>
+    <a class="q-btn" style="background:linear-gradient(135deg,#f59e0b,#f472b6);" href="freeroom.html">🎮 جرّب الفري روم (تسلية)</a>
+  </div>
+
+</div>
+
+<script src="../assets/js/icons-inject.js" data-base="../"></script>
+<script src="../assets/js/progress.js"></script>
+<script src="../assets/js/pc-parts-data.js"></script>
+<script src="../assets/js/pcbuild.js"></script>
+</body>
+</html>

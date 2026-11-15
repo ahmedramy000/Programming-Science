@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>علوم البرمجة — المحرر الحر</title>
+<link rel="manifest" href="../manifest.json">
+<link rel="icon" href="../icon-192.png">
+<meta name="theme-color" content="#0b0c0f">
+<link rel="stylesheet" href="../assets/css/index.css">
+<style>
+  .wrap{max-width:680px; margin:0 auto; padding:20px 18px 50px;}
+  header{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
+  header a{color:var(--muted); text-decoration:none; font-size:12px;}
+  header h1{font-size:17px; margin:0;}
+
+  .lang-row{display:flex; gap:7px; overflow-x:auto; padding-bottom:10px; margin-bottom:14px; -webkit-overflow-scrolling:touch;}
+  .lang-chip{
+    flex:0 0 auto; border:1px solid var(--border); background:var(--panel); color:var(--muted);
+    border-radius:20px; padding:7px 14px; font-size:12px; cursor:pointer; white-space:nowrap;
+  }
+  .lang-chip.active{border-color:var(--accent); color:var(--accent); background:#7c5cff14;}
+  .lang-chip .dot{display:inline-block; width:6px; height:6px; border-radius:50%; margin-inline-start:5px;}
+  .lang-chip .dot.ready{background:#2ecc71;}
+  .lang-chip .dot.soon{background:#8a8f9c;}
+
+  .editor-box{background:#1e1e1e; border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:12px;}
+  .editor-box textarea{
+    width:100%; min-height:200px; background:transparent; border:none; outline:none; resize:vertical;
+    color:#d4d4d4; font-family:'IBM Plex Mono',monospace; font-size:13px; line-height:1.8; padding:14px;
+    direction:ltr; text-align:left;
+  }
+  .run-btn{width:100%; background:var(--accent); color:#fff; border:none; padding:12px; font-size:13.5px; font-weight:bold; cursor:pointer;}
+  .run-btn:disabled{background:#3a3d46; cursor:not-allowed;}
+
+  .result-label{font-size:11px; color:var(--muted); margin:0 0 6px;}
+  .result-box{background:#000; border:1px solid var(--border); border-radius:10px; min-height:70px; padding:12px;}
+  .result-box pre{margin:0; color:#2ecc71; font-family:'IBM Plex Mono',monospace; font-size:12.5px; direction:ltr; text-align:left; white-space:pre-wrap; word-break:break-word;}
+  .result-box iframe{width:100%; min-height:220px; border:none; border-radius:6px; background:#fff;}
+  .soon-note{background:#1c1f2e; border:1px dashed #e0b65c55; border-radius:8px; padding:12px; font-size:12px; color:#e0b65c; line-height:1.8;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <a href="../interactive.html">→ الرئيسية</a>
+    <h1>👨‍💻 المحرر الحر</h1>
+    <span style="width:60px;"></span>
+  </header>
+
+  <div class="lang-row" id="langRow"></div>
+
+  <div class="editor-box">
+    <textarea id="codeInput" spellcheck="false"></textarea>
+  </div>
+  <button class="run-btn" id="runBtn">▶ تشغيل الكود</button>
+
+  <div style="margin-top:14px;">
+    <div class="result-label">النتيجة</div>
+    <div class="result-box" id="resultBox"></div>
+  </div>
+</div>
+
+<script>
+// 12 لغة — 3 شغالين فعليًا هنا (JS تنفيذ حقيقي، HTML/CSS معاينة حقيقية)،
+// والباقي محتاج سيرفر تنفيذ كود (زي Judge0/Piston) هنضيفه بعدين.
+const LANGUAGES = [
+  { id: 'js', name: 'JavaScript', ready: true, starter: 'console.log("Hello from JS!");' },
+  { id: 'html', name: 'HTML', ready: true, starter: '<h1 style="font-family:sans-serif">أهلًا!</h1>' },
+  { id: 'css', name: 'CSS', ready: true, starter: 'body{background:#7c5cff; color:#fff; font-family:sans-serif; padding:20px;}\n/* جرب غيّر الألوان */' },
+  { id: 'py', name: 'Python', ready: false, starter: 'print("Hello from Python!")' },
+  { id: 'cpp', name: 'C++', ready: false, starter: '#include <iostream>\nint main(){ std::cout << "Hello"; }' },
+  { id: 'c', name: 'C', ready: false, starter: '#include <stdio.h>\nint main(){ printf("Hello"); }' },
+  { id: 'java', name: 'Java', ready: false, starter: 'public class Main { public static void main(String[] a){ System.out.println("Hello"); } }' },
+  { id: 'csharp', name: 'C#', ready: false, starter: 'Console.WriteLine("Hello");' },
+  { id: 'php', name: 'PHP', ready: false, starter: '<?php echo "Hello"; ?>' },
+  { id: 'ruby', name: 'Ruby', ready: false, starter: 'puts "Hello from Ruby!"' },
+  { id: 'ts', name: 'TypeScript', ready: false, starter: 'const msg: string = "Hello"; console.log(msg);' },
+  { id: 'sql', name: 'SQL', ready: false, starter: 'SELECT "Hello" AS greeting;' },
+];
+
+let current = LANGUAGES[0];
+const langRow = document.getElementById('langRow');
+const codeInput = document.getElementById('codeInput');
+const resultBox = document.getElementById('resultBox');
+const runBtn = document.getElementById('runBtn');
+
+function renderChips() {
+  langRow.innerHTML = '';
+  LANGUAGES.forEach((lang) => {
+    const chip = document.createElement('button');
+    chip.className = 'lang-chip' + (lang.id === current.id ? ' active' : '');
+    chip.innerHTML = `${lang.name}<span class="dot ${lang.ready ? 'ready' : 'soon'}"></span>`;
+    chip.addEventListener('click', () => { current = lang; codeInput.value = lang.starter; renderChips(); resultBox.innerHTML = ''; });
+    langRow.appendChild(chip);
+  });
+}
+renderChips();
+codeInput.value = current.starter;
+
+runBtn.addEventListener('click', () => {
+  if (!current.ready) {
+    resultBox.innerHTML = `<div class="soon-note">⏳ تشغيل ${current.name} لسه قريبًا — محتاج سيرفر تنفيذ كود، مش حاجة بتشتغل في المتصفح لوحدها. JS وHTML وCSS شغالين دلوقتي فعليًا.</div>`;
+    return;
+  }
+  if (current.id === 'js') {
+    const logs = [];
+    const fakeConsole = { log: (...a) => logs.push(a.map((x) => (typeof x === 'object' ? JSON.stringify(x) : String(x))).join(' ')) };
+    try {
+      new Function('console', codeInput.value)(fakeConsole);
+      resultBox.innerHTML = `<pre>${(logs.join('\n') || '✅ اتنفّذ من غير مشاكل (معندوش console.log)').replace(/</g, '&lt;')}</pre>`;
+    } catch (e) {
+      resultBox.innerHTML = `<pre>⚠️ خطأ: ${e.message}</pre>`;
+    }
+    return;
+  }
+  if (current.id === 'html' || current.id === 'css') {
+    const html = current.id === 'html' ? codeInput.value : `<style>${codeInput.value}</style><p>نص تجريبي عشان تشوف شكل الـCSS</p>`;
+    resultBox.innerHTML = '';
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('sandbox', 'allow-scripts');
+    iframe.srcdoc = html;
+    resultBox.appendChild(iframe);
+  }
+});
+</script>
+
+</body>
+</html>

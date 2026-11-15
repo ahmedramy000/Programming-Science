@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>علوم البرمجة — الوضع الخفيف</title>
+<meta name="theme-color" content="#0b0c0f">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/5.3.0/css/xterm.min.css">
+<link rel="stylesheet" href="../assets/css/light.css">
+</head>
+<body>
+
+<header>
+  <a href="../interactive.html">⟵ رجوع للرئيسية</a>
+  <div>🪶 الوضع الخفيف — بايثون بدون إنترنت بعد أول تحميل</div>
+  <div class="status" id="status">بيجهّز...</div>
+</header>
+
+<div class="toolbar">
+  <button id="runBtn" disabled>▶ تشغيل</button>
+  <a href="terminal.html" class="term-link">🖥️ محاكاة تيرمينال لينكس</a>
+</div>
+
+<main>
+  <div id="editor"></div>
+  <div class="term-wrap"><div id="terminal"></div></div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/5.3.0/xterm.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
+
+<script src="../assets/js/light.js"></script>
+
+</body>
+</html>

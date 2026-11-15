@@ -1,0 +1,184 @@
+/* ============================================
+   Quest Mode — نظام تصميم خاص بالمهمات التفاعلية (بيكسل + الألعاب المصغّرة)
+   Glassmorphism + Gradients + Glow، منفصل بصريًا عن باقي المنصة عشان
+   يحس الطالب إنه دخل "وضع مهمة" مختلف ومثير.
+   ============================================ */
+
+.quest-page{
+  --q-grad1:#7c5cff; --q-grad2:#22d3ee; --q-grad3:#f472b6;
+  --q-glow: rgba(124,92,255,.45);
+  --q-glass-bg: rgba(255,255,255,.045);
+  --q-glass-border: rgba(255,255,255,.09);
+  min-height:100%;
+  background:
+    radial-gradient(circle at 15% 8%, rgba(124,92,255,.16) 0%, transparent 42%),
+    radial-gradient(circle at 85% 18%, rgba(34,211,238,.13) 0%, transparent 45%),
+    radial-gradient(circle at 50% 95%, rgba(244,114,182,.08) 0%, transparent 50%),
+    #07080c;
+}
+
+.quest-header{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:14px 18px; position:sticky; top:0; z-index:10;
+  background:rgba(7,8,12,.7); backdrop-filter:blur(16px) saturate(140%);
+  border-bottom:1px solid var(--q-glass-border);
+}
+.quest-header a.back{color:var(--muted); text-decoration:none; font-size:12.5px;}
+.quest-header .title{
+  font-size:14.5px; font-weight:800; letter-spacing:.2px;
+  background:linear-gradient(90deg, var(--q-grad1), var(--q-grad2));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+
+.quest-wrap{max-width:480px; margin:0 auto; padding:18px 16px 70px; display:flex; flex-direction:column; gap:16px;}
+
+/* ---- لوحة زجاجية عامة ---- */
+.glass-panel{
+  background:var(--q-glass-bg); border:1px solid var(--q-glass-border); border-radius:20px;
+  padding:18px; box-shadow:0 14px 36px -14px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.04);
+  position:relative; overflow:hidden;
+}
+.glass-panel::before{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:linear-gradient(135deg, rgba(255,255,255,.05), transparent 40%);
+}
+.glow-accent{box-shadow:0 14px 36px -14px rgba(0,0,0,.55), 0 0 30px -4px var(--q-glow);}
+
+.quest-fade{animation:questFadeIn .4s ease;}
+@keyframes questFadeIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+
+/* ---- بيكسل: المرشد الافتراضي ---- */
+.pixel-panel{display:flex; align-items:flex-start; gap:12px; padding:16px;}
+.pixel-avatar{
+  width:46px; height:46px; min-width:46px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:22px; background:linear-gradient(145deg, var(--q-grad1), var(--q-grad2));
+  box-shadow:0 0 18px -2px var(--q-glow); animation:pixelBob 3s ease-in-out infinite;
+}
+@keyframes pixelBob{0%,100%{transform:translateY(0) rotate(0deg);} 50%{transform:translateY(-3px) rotate(-4deg);}}
+.pixel-name{font-size:11px; font-weight:bold; color:var(--q-grad2); margin-bottom:4px;}
+.pixel-bubble{
+  flex:1; background:rgba(255,255,255,.05); border:1px solid var(--q-glass-border); border-radius:14px;
+  padding:10px 13px; font-size:13px; line-height:1.85; color:var(--text); min-height:20px;
+}
+.pixel-bubble .typing-dot{opacity:.6; animation:pixelType 1s steps(1) infinite;}
+@keyframes pixelType{0%,49%{opacity:.25;} 50%,100%{opacity:.85;}}
+
+/* ---- عنوان مرحلة ---- */
+.quest-stage-title{display:flex; align-items:center; gap:8px; font-size:14px; font-weight:bold; margin-bottom:6px;}
+.quest-stage-title .num{
+  width:22px; height:22px; border-radius:50%; background:linear-gradient(135deg, var(--q-grad1), var(--q-grad3));
+  display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff;
+}
+.quest-stage-desc{font-size:12px; color:var(--muted); line-height:1.8; margin:0 0 14px;}
+
+/* ---- الترابيزة: كيس مفتوح + مذربورد جواه (desk → case → board) ---- */
+.q-desk{
+  background:linear-gradient(160deg, #3b2a1c 0%, #2a1d13 55%, #1c130d 100%);
+  border-radius:18px; padding:14px 14px 16px; border:1px solid rgba(255,255,255,.06);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.05), 0 10px 26px -12px rgba(0,0,0,.6);
+  margin-bottom:14px;
+}
+.q-desk-caption{font-size:10.5px; color:rgba(255,255,255,.5); margin-bottom:10px; text-align:center;}
+.q-board{
+  position:relative; border-radius:12px; min-height:330px; padding:16px;
+  background:
+    radial-gradient(circle, rgba(52,211,153,.22) 1px, transparent 1.6px) 0 0/16px 16px,
+    linear-gradient(145deg, #11372a 0%, #0a211a 100%);
+  border:1px solid rgba(52,211,153,.3);
+  box-shadow:inset 0 0 36px rgba(0,0,0,.55);
+}
+.q-slot{
+  position:absolute; width:84px; height:64px; border:2px dashed rgba(255,255,255,.22); border-radius:10px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px;
+  color:var(--muted); text-align:center; padding:4px; transition:border-color .15s, background .15s;
+  background:rgba(0,0,0,.18);
+}
+.q-slot.over{border-color:var(--q-grad2); background:rgba(34,211,238,.14); box-shadow:0 0 14px -2px rgba(34,211,238,.4);}
+.q-slot.filled{border-style:solid; border-color:#34d399; background:rgba(52,211,153,.14); color:var(--text); box-shadow:0 0 14px -4px rgba(52,211,153,.4);}
+.q-slot .slot-label{font-size:9px; color:var(--muted); margin-top:2px;}
+.q-slot .pc-ic svg{display:block;}
+.q-tray{display:flex; flex-wrap:wrap; gap:9px; justify-content:center;}
+.q-piece{
+  width:78px; height:64px; background:rgba(255,255,255,.05); border:1px solid var(--q-glass-border); border-radius:10px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:9.5px;
+  color:var(--text); cursor:grab; user-select:none; gap:3px; touch-action:none; transition:box-shadow .15s; text-align:center;
+}
+.q-piece .pc-ic svg{display:block;}
+.q-piece.placed{opacity:.22; pointer-events:none;}
+.q-piece.dragging{opacity:.8; transform:scale(1.08); box-shadow:0 0 20px -4px var(--q-glow); background:rgba(20,22,30,.9);}
+
+/* ---- زر تشغيل كبير متوهج ---- */
+.q-power-btn{
+  width:86px; height:86px; border-radius:50%; margin:10px auto; display:flex; align-items:center; justify-content:center;
+  font-size:30px; background:radial-gradient(circle at 35% 30%, #2a2d36, #101217);
+  border:2px solid rgba(255,255,255,.12); color:#7dd3fc; cursor:pointer;
+  box-shadow:0 0 0 0 rgba(124,92,255,.55); animation:qPowerPulse 2s ease-in-out infinite;
+}
+.q-power-btn:active{transform:scale(.94);}
+@keyframes qPowerPulse{0%{box-shadow:0 0 0 0 rgba(124,92,255,.45);} 70%{box-shadow:0 0 0 16px rgba(124,92,255,0);} 100%{box-shadow:0 0 0 0 rgba(124,92,255,0);}}
+
+/* ---- التيرمينال داخل الكوست (مظهر زجاجي حوله) ---- */
+.q-term-shell{
+  background:#05060a; border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:12px 14px;
+  font-family:"Fira Code","Consolas",monospace; font-size:12px; min-height:140px; direction:ltr; text-align:left;
+  box-shadow:inset 0 0 24px rgba(0,0,0,.6);
+}
+.q-term-shell .q-line{color:#c7d2e0; white-space:pre-wrap; word-break:break-word; line-height:1.7;}
+.q-term-shell .q-line.ok{color:#4ade80;}
+.q-term-shell .q-line.err{color:#f87171;}
+.q-term-shell .q-line.dim{color:#5b6472;}
+.q-term-inrow{display:flex; align-items:center; gap:6px; margin-top:6px;}
+.q-term-prompt{color:#4ade80; white-space:nowrap;}
+.q-term-input{
+  flex:1; background:transparent; border:none; outline:none; color:#e6e8ee;
+  font-family:inherit; font-size:12px; direction:ltr; text-align:left;
+}
+.q-term-hint{font-size:11px; color:var(--muted); margin-top:8px; line-height:1.7;}
+
+.q-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:6px; border:none; cursor:pointer;
+  border-radius:12px; padding:11px 18px; font-size:13px; font-weight:bold; color:#fff;
+  background:linear-gradient(135deg, var(--q-grad1), var(--q-grad2));
+  box-shadow:0 10px 24px -10px var(--q-glow); transition:transform .1s;
+}
+.q-btn:active{transform:scale(.96);}
+.q-btn:disabled{opacity:.5; cursor:default;}
+.q-btn.block{display:flex; width:100%;}
+
+.q-note{
+  background:rgba(52,211,153,.07); border:1px solid rgba(52,211,153,.35); border-radius:14px; padding:14px;
+  font-size:12.5px; line-height:1.9; white-space:pre-line; color:var(--text);
+}
+.q-note-head{font-size:12.5px; font-weight:bold; color:#34d399; margin-bottom:8px;}
+
+.q-done{text-align:center; padding:22px 10px; display:flex; flex-direction:column; align-items:center; gap:10px;}
+.q-done .trophy{font-size:42px;}
+
+/* ---- الفري روم: كروت اختيار نوع الجهاز ---- */
+.fr-type-grid{display:flex; flex-direction:column; gap:10px;}
+.fr-type-card{
+  display:flex; flex-direction:column; align-items:flex-start; gap:3px; text-align:start; width:100%;
+  background:rgba(255,255,255,.04); border:1px solid var(--q-glass-border); border-radius:14px; padding:14px;
+  color:var(--text); font-family:inherit; cursor:pointer; transition:border-color .15s, transform .1s;
+}
+.fr-type-card:hover{border-color:var(--q-grad2); transform:translateY(-2px);}
+.fr-type-ic{font-size:24px;}
+.fr-type-name{font-size:13.5px; font-weight:bold;}
+.fr-type-desc{font-size:11.5px; color:var(--muted); line-height:1.6;}
+
+/* ---- شاشة "الديسكتوب" الوهمية بعد التشغيل ---- */
+.fr-desktop{
+  border-radius:20px; padding:18px; min-height:360px; display:flex; flex-direction:column;
+  justify-content:space-between; border:1px solid rgba(255,255,255,.1); box-shadow:0 20px 44px -18px rgba(0,0,0,.6);
+  position:relative; overflow:hidden;
+}
+.fr-desktop-top{display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,.65); direction:ltr;}
+.fr-desktop-mid{flex:1; display:flex; align-items:center; justify-content:center; text-align:center;}
+.fr-pc-name-wrap{background:rgba(0,0,0,.25); backdrop-filter:blur(6px); border-radius:14px; padding:16px 18px; border:1px solid rgba(255,255,255,.12);}
+.fr-pc-name-input{
+  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2); border-radius:10px; padding:9px 12px;
+  color:#fff; font-size:14px; text-align:center; width:200px; max-width:70vw;
+}
+.fr-desktop-icons{display:flex; gap:18px; justify-content:center; flex-wrap:wrap;}
+.fr-dicon{display:flex; flex-direction:column; align-items:center; gap:4px; font-size:22px; color:rgba(255,255,255,.85);}
+.fr-dicon span{font-size:9.5px; color:rgba(255,255,255,.65);}

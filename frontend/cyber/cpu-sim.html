@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>علوم البرمجة — جوّه المعالج (CPU)</title>
+<meta name="theme-color" content="#07080c">
+<link rel="stylesheet" href="../assets/css/cyber.css">
+<link rel="stylesheet" href="../assets/css/quest.css">
+<link rel="stylesheet" href="../assets/css/cpu-sim.css">
+</head>
+<body class="quest-page">
+
+<div class="quest-header">
+  <a class="back" href="index.html">⟵ المركز</a>
+  <div class="title">🧠 جوّه المعالج (CPU)</div>
+  <span></span>
+</div>
+
+<div class="quest-wrap">
+
+  <div class="glass-panel glow-accent pixel-panel quest-fade">
+    <div class="pixel-avatar">🤖</div>
+    <div style="flex:1;">
+      <div class="pixel-name">بيكسل</div>
+      <div class="pixel-bubble" id="pixelMsg">
+        جمّعت الجهاز وشغّلته — بس إيه اللي بيحصل فعلًا جوّه المعالج؟ المعالج بيشتغل بدورة ثابتة اسمها
+        <b>Fetch → Decode → Execute</b> (هات الأمر → افهمه → نفّذه). خلينا ننفّذ برنامج صغير سطر سطر ونشوف ده بعيننا.
+      </div>
+    </div>
+  </div>
+
+  <!-- قائمة الأوامر (البرنامج المصغّر) -->
+  <div class="glass-panel quest-fade">
+    <div class="quest-stage-title">📜 البرنامج اللي هننفّذه</div>
+    <div class="cpu-instr-list" id="cpuInstrList"></div>
+  </div>
+
+  <!-- السجلات (Registers) -->
+  <div class="glass-panel quest-fade">
+    <div class="quest-stage-title">🗂️ السجلات (Registers) — ذاكرة فايقة السرعة جوّه المعالج نفسه</div>
+    <div class="cpu-reg-row" id="cpuRegRow"></div>
+  </div>
+
+  <!-- الذاكرة (RAM) -->
+  <div class="glass-panel quest-fade">
+    <div class="quest-stage-title">💾 عناوين في الذاكرة (RAM)</div>
+    <div class="cpu-mem-row" id="cpuMemRow"></div>
+  </div>
+
+  <!-- حالة الخطوة الحالية + زرار التقديم -->
+  <div class="glass-panel glow-accent quest-fade">
+    <div class="cpu-status" id="cpuStatus">دوس "الخطوة الجاية" عشان تبدأ أول دورة Fetch-Decode-Execute 🚀</div>
+    <button class="q-btn block" id="cpuNextBtn" type="button" style="margin-top:12px;">الخطوة الجاية ←</button>
+  </div>
+
+  <!-- السؤال النهائي -->
+  <div class="glass-panel glow-accent quest-fade" id="cpuQuestion" style="display:none;">
+    <div class="quest-stage-title">❓ تأكيد الفهم</div>
+    <p class="quest-stage-desc">البرنامج خلص التنفيذ بالكامل. إيه القيمة اللي اتخزنت في عنوان الذاكرة رقم 100؟</p>
+    <div class="q-term-inrow" style="direction:ltr;">
+      <input class="q-term-input" id="cpuAnswerInput" type="text" placeholder="type the value..." style="background:rgba(255,255,255,.06); border:1px solid var(--q-glass-border); border-radius:10px; padding:10px;">
+      <button class="q-btn" id="cpuAnswerBtn" type="button">تأكيد ✓</button>
+    </div>
+    <div class="q-term-hint" id="cpuAnswerFeedback"></div>
+  </div>
+
+  <!-- النهاية -->
+  <div class="glass-panel glow-accent q-done" id="cpuDone" style="display:none;">
+    <div class="trophy">🧠</div>
+    <h2 style="margin:0;">فهمت إزاي المعالج بيشتغل فعلًا!</h2>
+    <p style="color:var(--muted); font-size:13px; max-width:320px; margin:0;">
+      كل برنامج بتكتبه — حتى أبسط كود بايثون — بينزل في الآخر لنفس الدورة دي جوّه المعالج: هات، افهم، نفّذ.
+    </p>
+    <a class="q-btn" href="index.html">كمّل مسار الأمن السيبراني ←</a>
+  </div>
+
+</div>
+
+<script src="../assets/js/icons-inject.js" data-base="../"></script>
+<script src="../assets/js/progress.js"></script>
+<script src="../assets/js/cpu-sim.js"></script>
+</body>
+</html>

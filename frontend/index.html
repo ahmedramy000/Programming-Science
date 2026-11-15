@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>علوم البرمجة // login</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#000000">
+<style>
+  :root{ --green:#00ff8c; --green-dim:#0a4a30; --bg:#040705; }
+  *{box-sizing:border-box;}
+  html,body{height:100%; margin:0;}
+  body{
+    background:var(--bg); color:var(--green);
+    font-family:"Courier New",ui-monospace,monospace;
+    display:flex; align-items:center; justify-content:center;
+    min-height:100%; overflow:hidden; position:relative;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  canvas#rain{position:fixed; inset:0; z-index:0; opacity:.55;}
+
+  .panel{
+    position:relative; z-index:1; width:min(380px,90vw);
+    background:rgba(4,10,6,.82); border:1px solid var(--green-dim);
+    border-radius:4px; padding:26px 24px 22px;
+    box-shadow:0 0 0 1px rgba(0,255,140,.08), 0 0 36px -6px rgba(0,255,140,.35);
+    backdrop-filter:blur(2px);
+  }
+  .boot{font-size:11px; line-height:1.9; color:#0edb82; margin-bottom:16px; min-height:90px; white-space:pre-wrap;}
+  .boot .cur{display:inline-block; width:7px; height:13px; background:var(--green); vertical-align:-2px; animation:blink 1s step-end infinite;}
+  @keyframes blink{50%{opacity:0;}}
+
+  .brand{font-size:19px; font-weight:bold; letter-spacing:1px; margin-bottom:4px; text-shadow:0 0 8px rgba(0,255,140,.6);}
+  .brand::before{content:"> "; opacity:.7;}
+  .sub{font-size:11px; color:#0a7a4d; margin-bottom:20px;}
+
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:11px; color:#0edb82; margin-bottom:5px;}
+  .field label::before{content:"$ ";}
+  .field input{
+    width:100%; background:#050a07; border:1px solid var(--green-dim); border-radius:3px;
+    padding:10px 10px; color:var(--green); font-family:inherit; font-size:13px; outline:none;
+  }
+  .field input:focus{border-color:var(--green); box-shadow:0 0 8px -1px rgba(0,255,140,.5);}
+
+  .go{
+    width:100%; margin-top:6px; padding:11px; background:var(--green); color:#021a10;
+    border:none; border-radius:3px; font-family:inherit; font-weight:bold; font-size:13.5px;
+    letter-spacing:1px; cursor:pointer; text-transform:uppercase;
+  }
+  .go:active{transform:scale(.98);}
+
+  .skip{display:block; text-align:center; margin-top:14px; font-size:11px; color:#0a7a4d; text-decoration:none;}
+  .skip:hover{color:var(--green);}
+
+  .note{margin-top:16px; font-size:10px; color:#0a7a4d; line-height:1.7; border-top:1px solid var(--green-dim); padding-top:10px;}
+  .formerr{font-size:11px; color:#ff6666; min-height:14px; margin-bottom:4px;}
+</style>
+</head>
+<body>
+
+<canvas id="rain"></canvas>
+
+<div class="panel">
+  <div class="boot" id="boot"></div>
+  <div class="brand">علوم البرمجة</div>
+  <div class="sub">// access terminal — enter credentials to continue</div>
+
+  <form id="loginForm">
+    <div class="field" id="nameField" style="display:none;">
+      <label>full_name</label>
+      <input type="text" id="fullName" autocomplete="name" placeholder="اسمك الكامل">
+    </div>
+    <div class="field">
+      <label>email</label>
+      <input type="email" id="email" autocomplete="email" placeholder="you@mail.com" required>
+    </div>
+    <div class="field" id="ageField" style="display:none;">
+      <label>age</label>
+      <input type="number" id="age" min="5" max="18" placeholder="12">
+    </div>
+    <div class="field">
+      <label>password</label>
+      <input type="password" id="pass" autocomplete="current-password" placeholder="••••••••" required>
+    </div>
+    <div class="formerr" id="formErr"></div>
+    <button type="submit" class="go" id="goBtn">[ دخول ]</button>
+  </form>
+
+  <a class="skip" href="#" id="toggleMode">معندكش حساب؟ اعمل واحد جديد</a>
+  <a class="skip" href="home.html">تخطي ← الدخول كزائر</a>
+</div>
+
+<script>
+// شاشة إقلاع نصية بسيطة (ديكور بس)
+const bootLines = [
+  "booting elom-elbarmaga-os v2.0 ...",
+  "mounting /courses /cyber /book ...",
+  "checking credentials module ... offline (soon)",
+  "ready.",
+];
+const bootEl = document.getElementById('boot');
+let li = 0;
+function typeLine(){
+  if (li >= bootLines.length) { bootEl.innerHTML += '<span class="cur"></span>'; return; }
+  const line = bootLines[li++];
+  const row = document.createElement('div');
+  bootEl.appendChild(row);
+  let ci = 0;
+  const t = setInterval(() => {
+    row.textContent = line.slice(0, ci++);
+    if (ci > line.length) { clearInterval(t); setTimeout(typeLine, 120); }
+  }, 14);
+}
+typeLine();
+
+// مطر رقمي خفيف في الخلفية
+const canvas = document.getElementById('rain');
+const ctx = canvas.getContext('2d');
+function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+resize(); addEventListener('resize', resize);
+const cols = Math.floor(innerWidth / 16);
+const drops = new Array(cols).fill(0);
+const chars = "01アイウエオカキクケコ$#%&01010101";
+function draw(){
+  ctx.fillStyle = 'rgba(4,7,5,0.12)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#00ff8c';
+  ctx.font = '13px monospace';
+  drops.forEach((y, i) => {
+    const ch = chars[Math.floor(Math.random() * chars.length)];
+    ctx.fillText(ch, i * 16, y);
+    if (y > canvas.height && Math.random() > 0.975) drops[i] = 0;
+    else drops[i] = y + 16;
+  });
+}
+setInterval(draw, 55);
+
+// API_BASE فاضي يعني "نفس الدومين" (لو الباك إند بيعمل serve للـ frontend زي render.yaml).
+// لو الفرونت إند منشور لوحده (زي Vercel) وحطيت الباك إند على دومين تاني، حط رابطه هنا.
+const API_BASE = '';
+
+let signupMode = false;
+const nameField = document.getElementById('nameField');
+const ageField = document.getElementById('ageField');
+const goBtn = document.getElementById('goBtn');
+const toggleMode = document.getElementById('toggleMode');
+const formErr = document.getElementById('formErr');
+
+toggleMode.addEventListener('click', (e) => {
+  e.preventDefault();
+  signupMode = !signupMode;
+  nameField.style.display = signupMode ? 'block' : 'none';
+  ageField.style.display = signupMode ? 'block' : 'none';
+  goBtn.textContent = signupMode ? '[ تسجيل ]' : '[ دخول ]';
+  toggleMode.textContent = signupMode ? 'عندك حساب؟ سجل دخول' : 'معندكش حساب؟ اعمل واحد جديد';
+  formErr.textContent = '';
+});
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  formErr.textContent = '';
+  goBtn.disabled = true;
+  const email = document.getElementById('email').value.trim();
+  const pass = document.getElementById('pass').value;
+  const path = signupMode ? '/api/auth/signup' : '/api/auth/login';
+  const body = signupMode
+    ? { full_name: document.getElementById('fullName').value.trim(), email, password: pass, age: document.getElementById('age').value }
+    : { email, password: pass };
+  try {
+    const r = await fetch(API_BASE + path, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'حصل خطأ');
+    localStorage.setItem('ps_token', data.token);
+    localStorage.setItem('ps_user', JSON.stringify(data.user));
+    window.location.href = 'home.html';
+  } catch (err) {
+    formErr.textContent = err.message === 'Failed to fetch'
+      ? 'مش قادر أوصل للسيرفر دلوقتي — جرّب "الدخول كزائر" تحت'
+      : err.message;
+  } finally {
+    goBtn.disabled = false;
+  }
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+/* ============================================
+   صفحة "جهازي" (Rig) — متجر القطع والجهاز الافتراضي الدائم للطالب.
+   مبني فوق نظام quest.css (glass/gradient) بنفس الهوية البصرية.
+   ============================================ */
+
+.rig-coins-pill{
+  background:rgba(245,197,24,.12); border:1px solid rgba(245,197,24,.4); color:#f5c518;
+  font-size:12px; font-weight:bold; padding:5px 12px; border-radius:20px; direction:ltr;
+}
+
+.rig-power-row{display:flex; align-items:center; gap:14px;}
+.rig-power-emoji{font-size:34px; line-height:1;}
+.rig-power-label{font-size:14px; font-weight:bold; margin-bottom:7px;}
+.rig-power-bar-track{height:10px; border-radius:6px; background:rgba(255,255,255,.08); overflow:hidden;}
+.rig-power-bar-fill{height:100%; border-radius:6px; width:0%; transition:width .4s ease; background:linear-gradient(90deg,#7c5cff,#22d3ee);}
+.rig-power-bar-fill.rig-tier-weak{background:linear-gradient(90deg,#ef4444,#f59e0b);}
+.rig-power-bar-fill.rig-tier-mid{background:linear-gradient(90deg,#f59e0b,#22d3ee);}
+.rig-power-bar-fill.rig-tier-strong{background:linear-gradient(90deg,#22d3ee,#34d399);}
+
+/* شارة النجوم فوق كل قطعة على اللوحة (المستوى الحالي) */
+.rig-tier-badge{
+  position:absolute; top:-8px; left:-6px; font-size:9px; background:#111317; border:1px solid var(--q-glass-border);
+  border-radius:8px; padding:1px 5px; line-height:1.4;
+}
+.q-slot.filled{position:absolute;}
+
+/* صف نظام التشغيل - بطاقة مستقلة تحت اللوحة */
+.rig-os-row{
+  display:flex; align-items:center; gap:12px; margin-top:12px; background:rgba(255,255,255,.04);
+  border:1px solid var(--q-glass-border); border-radius:14px; padding:12px 14px; position:relative;
+}
+.rig-os-row .os-ic{font-size:28px;}
+.rig-os-row .os-title{font-size:12px; color:var(--muted);}
+.rig-os-row .os-current{font-size:13px; font-weight:bold;}
+.rig-os-row .rig-tier-badge{position:static; margin-inline-start:auto;}
+
+/* متجر القطع */
+.rig-shop-list{display:flex; flex-direction:column; gap:10px;}
+.rig-shop-row{
+  display:flex; align-items:center; gap:12px; background:rgba(255,255,255,.04);
+  border:1px solid var(--q-glass-border); border-radius:14px; padding:12px 14px;
+}
+.rig-shop-ic{display:flex; align-items:center; justify-content:center; width:34px; min-width:34px;}
+.rig-shop-ic svg{display:block;}
+.rig-shop-info{flex:1; min-width:0;}
+.rig-shop-label{font-size:13px; font-weight:bold;}
+.rig-shop-current{font-size:11px; color:var(--muted); margin-top:2px;}
+.rig-shop-action{text-align:center; min-width:112px;}
+.rig-buy-btn{
+  font-size:11px; padding:8px 10px; line-height:1.5; white-space:nowrap;
+}
+.rig-buy-cost{font-size:10px; opacity:.85; direction:ltr; display:inline-block;}
+.rig-need-more{font-size:9.5px; color:var(--muted); margin-top:4px;}
+.rig-maxed{font-size:11.5px; color:#34d399; font-weight:bold;}

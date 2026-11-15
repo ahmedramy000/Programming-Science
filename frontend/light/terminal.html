@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>علوم البرمجة — محاكاة تيرمينال لينكس</title>
+<meta name="theme-color" content="#0b0c0f">
+<link rel="stylesheet" href="../assets/css/light-terminal.css">
+<link rel="stylesheet" href="../assets/css/v86-boot.css">
+</head>
+<body>
+
+<header>
+  <a href="index.html">⟵ رجوع للوضع الخفيف</a>
+  <div>🖥️ تيرمينال لينكس</div>
+</header>
+
+<div id="v86CapabilityCard" class="v86-capability-card">جاري فحص إمكانيات جهازك...</div>
+<div id="v86Container" style="display:none; margin:0 14px 14px;"></div>
+
+<div class="term-screen" id="termScreen">
+  <div class="term-lines" id="termLines"></div>
+  <div class="term-input-row">
+    <span class="prompt" id="promptLabel">kudosk@kali:~$</span>
+    <input type="text" id="termInput" autocomplete="off" autocapitalize="off" spellcheck="false">
+  </div>
+</div>
+
+<script src="../assets/v86/libv86.js"></script>
+<script src="../assets/js/v86-boot.js"></script>
+<script src="../assets/js/progress.js"></script>
+<script src="../assets/js/light-terminal.js"></script>
+<script>
+  // فحص تلقائي: لو الجهاز بيتحمّل نظام حقيقي، نديله الخيار ده بدل التدريبي بس
+  (async () => {
+    const card = document.getElementById('v86CapabilityCard');
+    const v86Container = document.getElementById('v86Container');
+    const termScreen = document.getElementById('termScreen');
+    if (!window.V86Kudosk) { card.style.display = 'none'; return; }
+
+    const cap = await window.V86Kudosk.checkV86Capability();
+    if (cap.capable) {
+      card.className = 'v86-capability-card ok';
+      card.innerHTML = `
+        <h4>✅ جهازك يقدر يشغّل نظام Kali حقيقي!</h4>
+        <p style="margin:0; font-size:12px; color:#8a8f9c;">لو عندك ملف ISO، تقدر تشغّله مباشرة هنا. غير كده، التيرمينال التدريبي تحت جاهز.</p>
+      `;
+      const toggleBtn = document.createElement('button');
+      toggleBtn.className = 'v86-pick-btn';
+      toggleBtn.style.marginTop = '10px';
+      toggleBtn.textContent = '⚡ شغّل نظام حقيقي';
+      toggleBtn.addEventListener('click', () => {
+        v86Container.style.display = 'block';
+        termScreen.style.display = 'none';
+        window.V86Kudosk.mountV86Boot(v86Container, { v86BasePath: '../assets/v86/', defaultRam: 512 });
+      });
+      card.appendChild(toggleBtn);
+    } else {
+      card.className = 'v86-capability-card no';
+      card.innerHTML = `
+        <h4>ℹ️ جهازك دلوقتي مناسب أكتر للنسخة التدريبية الخفيفة</h4>
+        <ul>${cap.reasons.map((r) => `<li>${r}</li>`).join('')}</ul>
+      `;
+    }
+  })();
+</script>
+</body>
+</html>

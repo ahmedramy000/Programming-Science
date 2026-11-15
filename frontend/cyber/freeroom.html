@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>علوم البرمجة — الفري روم</title>
+<meta name="theme-color" content="#07080c">
+<link rel="stylesheet" href="../assets/css/cyber.css">
+<link rel="stylesheet" href="../assets/css/quest.css">
+</head>
+<body class="quest-page">
+
+<div class="quest-header">
+  <a class="back" href="index.html">⟵ المركز</a>
+  <div class="title">🎮 الفري روم</div>
+  <span></span>
+</div>
+
+<div class="quest-wrap">
+
+  <!-- خطوة 1: اختار نوع الجهاز اللي عايز تجمّعه - تسلية بس، مفيش صح/غلط هنا -->
+  <div class="glass-panel glow-accent quest-fade" id="frPicker">
+    <div class="quest-stage-title">🎮 فري روم — جمّع أي جهاز تحلم بيه</div>
+    <p class="quest-stage-desc">مفيش درجات هنا ولا تقييم — بس تتمرّن وتجمّع جهازك الخيالي زي ما تحب. اختار نوع الجهاز الأول:</p>
+    <div class="fr-type-grid" id="frTypeGrid"></div>
+    <div id="frResume" style="display:none; margin-top:14px;"></div>
+  </div>
+
+  <!-- خطوة 2: التجميع (بنفس أسلوب اللوحة والقطع) -->
+  <div class="glass-panel quest-fade" id="frStageBuild" style="display:none;">
+    <div class="quest-stage-title"><span id="frDeviceIcon">🖥️</span>&nbsp;جمّع <span id="frDeviceName">جهازك</span></div>
+    <p class="quest-stage-desc">اسحب كل قطعة لمكانها الصح. جرّب براحتك، مفيش وقت محدد.</p>
+    <div class="q-desk">
+      <div class="q-desk-caption">🗄️ الترابيزة — كيس مفتوح وجواه المذربورد</div>
+      <div class="q-board" id="frBoard"></div>
+    </div>
+    <div class="q-tray" id="frTray"></div>
+    <div class="pcbuild-feedback" id="frFeedback"></div>
+  </div>
+
+  <!-- خطوة 3: تشغيل الجهاز -->
+  <div class="glass-panel quest-fade" id="frStagePower" style="display:none; text-align:center;">
+    <div class="quest-stage-title" style="justify-content:center;">جهازك جاهز 🎉</div>
+    <p class="quest-stage-desc">دوس شغّله وشوف شاشة الديسكتوب بتاعته.</p>
+    <button class="q-power-btn" id="frPowerBtn" type="button" title="تشغيل">⏻</button>
+  </div>
+
+  <!-- خطوة 4: شاشة الديسكتوب بتاع جهازه (تسلية بس) -->
+  <div class="quest-fade" id="frStageDesktop" style="display:none;">
+    <div class="fr-desktop" id="frDesktopScreen">
+      <div class="fr-desktop-top">
+        <span id="frClock">00:00</span>
+        <span id="frSpecLabel"></span>
+      </div>
+      <div class="fr-desktop-mid">
+        <div class="fr-pc-name-wrap">
+          <div style="font-size:12px; opacity:.75; margin-bottom:6px;">اسم جهازك:</div>
+          <input class="fr-pc-name-input" id="frNameInput" maxlength="24" placeholder="اكتب اسم جهازك...">
+        </div>
+      </div>
+      <div class="fr-desktop-icons">
+        <div class="fr-dicon">📁<span>ملفاتي</span></div>
+        <div class="fr-dicon">🎵<span>موسيقى</span></div>
+        <div class="fr-dicon">🖼️<span>صور</span></div>
+        <div class="fr-dicon">🗑️<span>سلة المهملات</span></div>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:14px;">
+      <button class="q-btn block" id="frSaveBtn" type="button">💾 احفظ جهازك</button>
+      <button class="q-btn block" id="frRebuildBtn" type="button" style="background:linear-gradient(135deg,#f59e0b,#f472b6);">🔁 ابدأ جهاز جديد</button>
+    </div>
+    <div class="q-term-hint" id="frSaveMsg" style="text-align:center; margin-top:8px;"></div>
+  </div>
+
+</div>
+
+<script src="../assets/js/icons-inject.js" data-base="../"></script>
+<script src="../assets/js/progress.js"></script>
+<script src="../assets/js/pc-parts-data.js"></script>
+<script src="../assets/js/freeroom.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+:root{--bg:#0b0c0f; --panel:#111317; --accent:#38bdf8; --text:#e6e8ee; --muted:#8a8f9c; --border:#23262e;}
+*{box-sizing:border-box;}
+html,body{height:100%; margin:0;}
+body{background:var(--bg); color:var(--text); font-family:system-ui,sans-serif;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);}
+header{display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:1px solid var(--border); background:var(--panel);}
+header a{color:var(--muted); text-decoration:none; font-size:13px;}
+main{max-width:640px; margin:0 auto; padding:40px 18px;}
+h1{font-size:22px;}
+.card{
+  background:var(--panel); border:1px solid var(--border); border-radius:14px;
+  padding:22px; margin-bottom:18px;
+}
+.card h3{margin-top:0;}
+.card p{color:var(--muted); font-size:13px; line-height:1.7;}
+.dl-btn{
+  display:inline-block; background:var(--accent); color:#031018; text-decoration:none;
+  padding:10px 18px; border-radius:10px; font-weight:700; font-size:14px; margin-top:8px;
+}
+code{background:#000; padding:2px 6px; border-radius:6px; font-size:12px;}
+
+/* --- القائمة الرئيسية وتنظيم الخطوات --- */
+.intro{color:var(--muted); font-size:13px; margin-top:-4px;}
+.menu{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px;}
+.menu a{
+  background:var(--panel); border:1px solid var(--border); color:var(--text);
+  text-decoration:none; padding:8px 14px; border-radius:20px; font-size:12px;
+}
+.menu a:hover{border-color:var(--accent);}
+.sub-card{
+  background:#0d0f13; border:1px solid var(--border); border-radius:10px;
+  padding:14px; margin-top:14px;
+}
+.sub-card h4{margin:0 0 6px; font-size:14px;}
+.dl-btn.secondary{background:transparent; border:1px solid var(--accent); color:var(--accent);}

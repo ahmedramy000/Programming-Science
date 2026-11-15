@@ -1,0 +1,14 @@
+.v86-boot{background:#14161c; border:1px solid #23262e; border-radius:12px; padding:16px;}
+.v86-ram-row{display:flex; gap:8px; margin-bottom:12px;}
+.v86-ram-opt{border:1px solid #23262e; background:#0d0f13; color:#e6e8ee; border-radius:8px; padding:6px 12px; font-size:12px; cursor:pointer;}
+.v86-ram-opt.active{border-color:#7c5cff; color:#7c5cff;}
+.v86-pick-btn{display:inline-flex; align-items:center; gap:8px; background:#7c5cff; color:#fff; border:none; border-radius:10px; padding:11px 20px; font-size:13.5px; font-weight:bold; cursor:pointer;}
+.v86-file-chosen{margin-top:10px; font-size:12px; color:#8a8f9c;}
+.v86-status{margin-top:8px; font-size:12px; color:#8a8f9c; direction:ltr;}
+.v86-screen{margin-top:14px; width:100%; min-height:300px; background:#000; border-radius:8px; align-items:center; justify-content:center;}
+
+.v86-capability-card{background:#14161c; border:1px solid #23262e; border-radius:12px; padding:16px; margin-bottom:14px;}
+.v86-capability-card.ok{border-color:#2ecc7155;}
+.v86-capability-card.no{border-color:#ff5a5a55;}
+.v86-capability-card h4{margin:0 0 8px; font-size:13.5px;}
+.v86-capability-card ul{margin:6px 0 0; padding-inline-start:18px; font-size:12px; color:#8a8f9c; line-height:1.8;}

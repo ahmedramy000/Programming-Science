@@ -1,0 +1,181 @@
+:root{
+  --bg:#0b0c0f; --panel:#111317; --surface2:#171a21; --accent:#38bdf8; --accent2:#22c55e;
+  --text:#e6e8ee; --muted:#8a8f9c; --border:#23262e;
+}
+*{box-sizing:border-box;}
+html,body{height:100%; margin:0;}
+body{
+  background:var(--bg); color:var(--text); font-family:system-ui,sans-serif;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+header{
+  display:flex; align-items:center; justify-content:space-between; padding:10px 16px;
+  border-bottom:1px solid var(--border); background:var(--panel); position:sticky; top:0; z-index:5;
+  gap:10px; flex-wrap:wrap;
+}
+header a{color:var(--muted); text-decoration:none; font-size:13px;}
+.change-grade-btn{
+  background:var(--surface2); color:var(--text); border:1px solid var(--border); border-radius:20px;
+  padding:5px 14px; font-size:12px; cursor:pointer;
+}
+main{max-width:880px; margin:0 auto; padding:24px 16px 60px;}
+
+/* ---- اختيار الصف ---- */
+.grade-picker{max-width:420px; margin:60px auto 0; text-align:center; padding:0 16px;}
+.grade-picker h1{font-size:20px; margin:0 0 6px;}
+.grade-picker .sub{color:var(--muted); font-size:13px; margin-bottom:24px;}
+.grade-options{display:flex; flex-direction:column; gap:10px;}
+.grade-opt{
+  background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px;
+  color:var(--text); font-size:15px; cursor:pointer; display:flex; align-items:center; gap:10px;
+  justify-content:center; font-family:inherit;
+}
+.grade-opt:hover{border-color:var(--accent);}
+.g-emoji{font-size:20px;}
+
+/* ---- تابات الترم ---- */
+.term-tabs{display:flex; gap:8px; margin-bottom:20px;}
+.term-tab{
+  flex:1; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--panel);
+  color:var(--muted); cursor:pointer; font-size:13px; font-family:inherit;
+}
+.term-tab.active{border-color:var(--accent); color:var(--accent); background:var(--surface2);}
+
+/* ---- شبكة الوحدات ---- */
+.unit-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px;}
+.unit-card{
+  background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:16px;
+  text-decoration:none; color:var(--text); text-align:center; transition:transform .15s;
+}
+.unit-card:not(.empty):hover{transform:translateY(-3px); border-color:var(--accent);}
+.unit-card.empty{opacity:.45;}
+.unit-emoji{font-size:26px; margin-bottom:6px;}
+.unit-title{font-size:13px; font-weight:700; margin-bottom:4px;}
+.unit-status{font-size:11px; color:var(--muted);}
+
+/* ---- حالة فاضية ---- */
+.empty-state{
+  grid-column:1/-1; text-align:center; padding:50px 20px; color:var(--muted);
+  background:var(--panel); border:1px dashed var(--border); border-radius:14px; font-size:28px;
+}
+.empty-state h3{font-size:15px; color:var(--text); margin:10px 0 6px;}
+.empty-state p{font-size:12px; margin:0;}
+
+/* ---- مقدمة الوحدة/الدرس ---- */
+.unit-intro{text-align:center; margin-bottom:20px;}
+.unit-intro h1{font-size:19px;}
+.lesson-intro{text-align:center; margin-bottom:20px;}
+.lesson-intro h1{font-size:19px;}
+.lesson-done-panel{
+  display:none; flex-direction:column; align-items:center; gap:10px; margin-top:24px;
+  background:var(--panel); border:1px solid var(--accent2); border-radius:14px; padding:20px; text-align:center;
+}
+
+/* ---- نظام الشات التفاعلي (lesson type: chat) ---- */
+.eng-chat-wrap{display:flex; flex-direction:column;}
+.eng-chat-log{padding:10px 4px; display:flex; flex-direction:column; gap:10px;}
+.eng-chat-sentinel{height:1px;}
+/* فقاعة كلام بسيطة ومألوفة — أفاتار دائري صغير + فقاعة ملوّنة */
+.eng-msg{display:flex; align-items:flex-end; gap:8px; max-width:86%;}
+.eng-msg-char-a, .eng-msg-char-b{align-self:flex-start;}
+.eng-msg-student{align-self:flex-end; flex-direction:row-reverse;}
+.eng-avatar{
+  width:32px; height:32px; min-width:32px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:#1c1f2e; border:1px solid rgba(255,255,255,.12);
+}
+.eng-bubble-col{display:flex; flex-direction:column; gap:3px; min-width:0;}
+.eng-msg-name{font-size:10.5px; font-weight:700; color:#9aa0a6; padding:0 4px;}
+.eng-bubble{
+  background:#1c1f2e; border:1px solid rgba(255,255,255,.08); border-radius:16px;
+  border-start-start-radius:4px; padding:10px 14px; font-size:13.5px; line-height:1.85; color:#e8e8f0;
+}
+.eng-msg-student .eng-bubble{background:#7c5cff; color:#fff; border-color:#7c5cff; border-start-end-radius:4px; border-start-start-radius:16px;}
+
+/* بيكسل (a) بنفسجي خفيف، نون (b) تركواز خفيف — تفرقة بصرية بس */
+.eng-msg-char-a .eng-avatar{background:#7c5cff1f; border-color:#7c5cff55; color:#cfd2ff;}
+.eng-msg-char-b .eng-avatar{background:#2ec4c41f; border-color:#2ec4c455; color:#b6f3ef;}
+
+/* كارت نظام بسيط (نتيجة سؤال، تشغيل كود...) */
+.eng-panel{
+  width:100%; border-radius:12px; background:#14161c; border:1px solid rgba(255,255,255,.08);
+}
+.eng-panel.eng-correct{border-color:#2ecc71; background:#16321f;}
+.eng-panel.eng-wrong{border-color:#ff5a5a; background:#331818;}
+.eng-chat-controls{display:none;}
+.eng-code-controls{margin-top:4px;}
+
+/* محرر كود حقيقي (JS) — "هيا نجرّب!" */
+.eng-code-wrap{display:flex; flex-direction:column; gap:10px; padding:4px 2px;}
+.eng-code-task{background:#14161c; border:1px solid var(--border,#23262e); border-radius:12px; padding:14px 16px;}
+.eng-code-task-title{font-weight:bold; font-size:14px; color:#7c5cff; margin-bottom:8px;}
+.eng-code-task p{margin:0 0 8px; font-size:13px; color:#e6e8ee; line-height:1.8;}
+.eng-code-copy{display:flex; align-items:center; justify-content:space-between; gap:10px; background:#0d0f13; border:1px solid var(--border,#23262e); border-radius:8px; padding:8px 10px;}
+.eng-code-copy code{font-family:'IBM Plex Mono',monospace; font-size:12px; color:#ce9178; direction:ltr; text-align:left;}
+.eng-copy-btn{background:#7c5cff22; border:1px solid #7c5cff66; color:#cfd2ff; border-radius:6px; padding:5px 10px; font-size:11px; cursor:pointer; white-space:nowrap;}
+.eng-code-input{
+  width:100%; min-height:110px; background:#1e1e1e; color:#d4d4d4; border:none; resize:vertical;
+  font-family:'IBM Plex Mono',monospace; font-size:12.5px; line-height:1.8; padding:12px; direction:ltr; text-align:left; outline:none;
+}
+.eng-run-btn{width:100%; background:#7c5cff; color:#fff; border:none; padding:10px; font-size:13px; font-weight:bold; cursor:pointer;}
+.eng-run-btn:active{background:#6a4ce0;}
+.eng-code-output{margin:0; padding:12px; min-height:50px; background:#000; color:#2ecc71; font-family:'IBM Plex Mono',monospace; font-size:12.5px; direction:ltr; text-align:left; white-space:pre-wrap; word-break:break-word;}
+
+/* مربع النتيجة بتاع بانل الكود داخل الحدوتة */
+.eng-code-result{border-top:1px solid rgba(255,255,255,.08);}
+.eng-code-result-label{font-size:10.5px; color:#9aa0a6; padding:8px 12px 0; font-family:'Tahoma',sans-serif;}
+.eng-code-result-box{padding:8px 12px 12px;}
+.eng-code-preview-frame{width:100%; min-height:120px; border:1px solid var(--border,#23262e); border-radius:8px; background:#fff;}
+.eng-code-note{background:#1c1f2e; border:1px dashed #e0b65c55; border-radius:8px; padding:10px 12px; font-size:12px; color:#e0b65c; direction:rtl; text-align:right; line-height:1.8;}
+
+/* كارت أهداف الدرس في بداية الشات */
+.eng-objectives{
+  align-self:stretch; background:#14161c; border:1px solid var(--border, #23262e);
+  border-radius:12px; padding:14px 16px; margin-bottom:10px;
+}
+.eng-objectives-title{font-weight:bold; font-size:13.5px; color:#38bdf8; margin-bottom:10px;}
+.eng-objectives-item{
+  background:#1c1f2e; border-radius:8px; padding:9px 12px; font-size:12.5px; color:#e6e8ee;
+  margin-bottom:7px; line-height:1.7;
+}
+.eng-objectives-item:last-child{margin-bottom:0;}
+
+/* بانل السؤال على شكل محرر أكواد (IDE) — لسه مستخدم في نوع الدرس 'code' */
+.eng-ide{
+  align-self:stretch; width:100%; max-width:100%; margin:4px 0 8px;
+  background:#1e1e1e; border:1px solid rgba(245,184,77,.35); border-radius:10px;
+  overflow:hidden; direction:ltr; text-align:left;
+  box-shadow:0 6px 18px -6px rgba(0,0,0,.5);
+}
+.eng-ide-tabbar{display:flex; align-items:center; gap:6px; padding:9px 12px; background:#2d2d2d;}
+.eng-ide-qlabel{font-family:'Tahoma',sans-serif; font-weight:bold; font-size:12.5px; color:#38bdf8;}
+.eng-ide-progress{margin-inline-start:auto; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#6a9955; background:#132a1d; border:1px solid #2ecc7144; border-radius:8px; padding:1px 7px;}
+.eng-perfect-badge{
+  align-self:center; margin:10px 0; padding:10px 18px; border-radius:20px;
+  background:linear-gradient(135deg,#2ecc71,#1fd1c9); color:#04201a; font-weight:bold; font-size:13px;
+  box-shadow:0 6px 18px -6px rgba(46,204,113,.6); animation:engBadgePop .4s ease-out;
+}
+@keyframes engBadgePop{0%{transform:scale(.6); opacity:0;} 100%{transform:scale(1); opacity:1;}}
+
+/* توست XP/ميداليات بعد إكمال درس */
+.ps-toast{
+  position:fixed; top:16px; inset-inline:0; margin:0 auto; width:fit-content; z-index:200;
+  display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
+  padding:9px 16px; border-radius:14px; background:#14161c; border:1px solid #2ecc7155;
+  box-shadow:0 10px 26px -8px rgba(0,0,0,.6);
+  opacity:0; transform:translateY(-14px); transition:opacity .25s, transform .25s;
+}
+.ps-toast.show{opacity:1; transform:translateY(0);}
+.ps-toast-xp{color:#2ecc71; font-weight:bold; font-size:13px;}
+.ps-toast-coins{color:#f5c518; font-weight:bold; font-size:13px;}
+.ps-toast-medal{color:#ffd166; font-size:13px;}
+.eng-ide-body{padding:10px 0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; line-height:1.9;}
+.eng-ide-line{display:flex; padding:0 12px;}
+.eng-ide-gutter{width:26px; min-width:26px; color:#5a5a5a; text-align:right; margin-inline-end:12px; user-select:none;}
+.eng-ide-code{color:#d4d4d4; white-space:pre-wrap; word-break:break-word;}
+.eng-ide-comment{color:#6a9955; font-style:italic;}
+.eng-ide-kw{color:#c586c0;}
+.eng-ide-str{color:#ce9178;}
+.eng-ide-choice{cursor:pointer; transition:background .12s;}
+.eng-ide-choice:hover{background:rgba(124,92,255,.14);}
+.eng-ide-choice.eng-ide-picked{background:rgba(124,92,255,.22);}

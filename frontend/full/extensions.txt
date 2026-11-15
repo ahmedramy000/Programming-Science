@@ -1,0 +1,26 @@
+# مكتبة إضافات VS Code - Kudosk
+# كل سطر = معرّف إضافة (Extension ID)
+# سطر يبدأ بـ # يتجاهله السكريبت (تعليق)
+# ضيف أو امسح أي سطر براحتك براحتك - السكريبت بيقرأ الملف ده تلقائي
+
+# --- أساسيات بايثون ---
+ms-python.python
+ms-python.vscode-pylance
+
+# --- تشغيل الكود بسرعة ---
+formulahendry.code-runner
+
+# --- Git ---
+eamodio.gitlens
+
+# --- تنسيق الكود ---
+esbenp.prettier-vscode
+
+# --- واجهة أحلى ---
+pkief.material-icon-theme
+
+# --- دعم WSL (ربط VS Code بـ Kali اللي اتثبتت) ---
+ms-vscode-remote.remote-wsl
+
+# --- ويب (لو هتضيف مسار تطوير الويب بعدين) ---
+ritwickdey.liveserver
