@@ -14,6 +14,7 @@ const crypto = require('crypto');
 const store = require('./store');
 
 const app = express();
+app.set('trust proxy', 1); // Render/Vercel: IP المستخدم الحقيقي بدل IP البروكسي
 const PORT = process.env.PORT || 4000;
 
 app.use(cors());
@@ -224,15 +225,48 @@ app.get('/api/lessons/cyber-maze/:age', (req, res) => {
 // لخدمة معزولة تمامًا (container لكل طلب، بلا شبكة، بلا وصول للملفات).
 // ============================================
 
-// لغات مسموحة بس — أي لغة تانية مرفوضة فورًا
-const RUNNERS = {
-  python: { cmd: 'python3', ext: '.py' },
-  javascript: { cmd: 'node', ext: '.js' },
+// اللغات اللي السيرفر يقدر ينفّذها فعليًا — بنكتشف الموجود منها وقت التشغيل (مش بنفترض)
+// interpreted: بيتشغّل مباشرة | compile: بيتبني الأول وبعدين بيتشغّل
+const LANG_DEFS = {
+  python:     { label: 'Python',     bins: ['python3'],          file: 'main.py',   run: () => ['python3', ['main.py']] },
+  javascript: { label: 'JavaScript', bins: ['node'],             file: 'main.js',   run: () => ['node', ['main.js']] },
+  php:        { label: 'PHP',        bins: ['php'],              file: 'main.php',  run: () => ['php', ['main.php']] },
+  ruby:       { label: 'Ruby',       bins: ['ruby'],             file: 'main.rb',   run: () => ['ruby', ['main.rb']] },
+  c:          { label: 'C',          bins: ['gcc'],              file: 'main.c',    compile: () => ['gcc', ['main.c', '-o', 'prog', '-lm']], run: () => ['./prog', []] },
+  cpp:        { label: 'C++',        bins: ['g++'],              file: 'main.cpp',  compile: () => ['g++', ['main.cpp', '-o', 'prog']],       run: () => ['./prog', []] },
+  java:       { label: 'Java',       bins: ['javac', 'java'],    file: 'Main.java', compile: () => ['javac', ['Main.java']],                  run: () => ['java', ['-Xmx128m', 'Main']] },
 };
 
+async function hasBinary(bin) {
+  const exts = process.platform === 'win32' ? ['', ...(process.env.PATHEXT || '.EXE;.CMD;.BAT').split(';')] : [''];
+  for (const dir of (process.env.PATH || '').split(path.delimiter)) {
+    for (const ext of exts) {
+      try { await fs.access(path.join(dir, bin + ext)); return true; } catch { /* جرّب اللي بعده */ }
+    }
+  }
+  return false;
+}
+
+const availableLangs = new Set();
+async function detectLanguages() {
+  for (const [id, def] of Object.entries(LANG_DEFS)) {
+    const found = await Promise.all(def.bins.map(hasBinary));
+    if (found.every(Boolean)) availableLangs.add(id);
+  }
+  console.log('لغات التنفيذ المتاحة على السيرفر:', [...availableLangs].join(', ') || 'مفيش');
+}
+
+// المحرر الحر بيسأل السيرفر إيه اللغات الجاهزة فعلًا
+app.get('/api/languages', (req, res) => {
+  res.json({ languages: Object.entries(LANG_DEFS).map(([id, d]) => ({ id, label: d.label, ready: availableLangs.has(id) })) });
+});
+
 const MAX_CODE_LENGTH = 20000;
+const COMPILE_TIMEOUT_MS = 15000;
 const EXEC_TIMEOUT_MS = 5000;
 const MAX_OUTPUT_BYTES = 200 * 1024;
+const MAX_CONCURRENT_RUNS = 3; // السيرفر المجاني صغير: مش هننفذ أكتر من 3 مرة واحدة
+let activeRuns = 0;
 
 // rate limit بسيط جدًا بالـ IP (في الذاكرة فقط - يكفي للـ MVP)
 const rateMap = new Map();
@@ -248,6 +282,21 @@ function isRateLimited(ip) {
   return recent.length > RATE_MAX_REQUESTS;
 }
 
+// 🔒 كود المستخدم بيتشغّل ببيئة نضيفة: مفيش DATABASE_URL ولا Deploy Hooks ولا أي سر من متغيرات السيرفر
+function sandboxEnv(dir) {
+  return { PATH: process.env.PATH || '', HOME: dir, TMPDIR: dir, LANG: 'C.UTF-8' };
+}
+
+function execInDir(cmd, args, dir, timeout) {
+  return new Promise((resolve) => {
+    execFile(cmd, args, { cwd: dir, env: sandboxEnv(dir), timeout, killSignal: 'SIGKILL', maxBuffer: MAX_OUTPUT_BYTES, windowsHide: true },
+      (err, stdout, stderr) => {
+        if (err && err.killed) return resolve({ timedOut: true, output: '', error: '' });
+        resolve({ failed: !!err, output: (stdout || '').slice(0, 5000), error: (stderr || '').slice(0, 2000) });
+      });
+  });
+}
+
 app.post('/run', async (req, res) => {
   const ip = req.ip || req.connection.remoteAddress || 'unknown';
   if (isRateLimited(ip)) {
@@ -255,41 +304,46 @@ app.post('/run', async (req, res) => {
   }
 
   const { code, language } = req.body || {};
-  const runner = RUNNERS[language];
-  if (!runner) {
-    return res.status(400).json({ error: 'اللغة مش مدعومة (python أو javascript بس حاليًا)' });
+  const def = Object.prototype.hasOwnProperty.call(LANG_DEFS, language) ? LANG_DEFS[language] : null;
+  if (!def) {
+    return res.status(400).json({ error: 'اللغة مش مدعومة' });
+  }
+  if (!availableLangs.has(language)) {
+    return res.status(501).json({ error: `${def.label} مش متثبتة على السيرفر ده حاليًا` });
   }
   if (typeof code !== 'string' || code.length === 0 || code.length > MAX_CODE_LENGTH) {
     return res.status(400).json({ error: 'الكود فاضي أو طويل أكتر من اللازم' });
   }
+  if (activeRuns >= MAX_CONCURRENT_RUNS) {
+    return res.status(503).json({ error: 'السيرفر مشغول بتنفيذ أكواد تانية، جرّب بعد ثواني' });
+  }
 
-  const tmpFile = path.join(os.tmpdir(), `kudosk-${crypto.randomUUID()}${runner.ext}`);
+  activeRuns++;
+  const dir = path.join(os.tmpdir(), `kudosk-${crypto.randomUUID()}`);
   try {
-    await fs.writeFile(tmpFile, code, { mode: 0o600 });
+    await fs.mkdir(dir, { mode: 0o700 });
+    await fs.writeFile(path.join(dir, def.file), code, { mode: 0o600 });
 
-    const result = await new Promise((resolve) => {
-      execFile(
-        runner.cmd,
-        [tmpFile],
-        { timeout: EXEC_TIMEOUT_MS, maxBuffer: MAX_OUTPUT_BYTES, windowsHide: true },
-        (err, stdout, stderr) => {
-          if (err && err.killed) {
-            return resolve({ output: '', error: '⏱ انتهت المهلة المسموحة (5 ثواني)' });
-          }
-          resolve({ output: (stdout || '').slice(0, 5000), error: (stderr || '').slice(0, 2000) });
-        }
-      );
-    });
-
-    res.json(result);
+    if (def.compile) {
+      const [ccmd, cargs] = def.compile();
+      const c = await execInDir(ccmd, cargs, dir, COMPILE_TIMEOUT_MS);
+      if (c.timedOut) return res.json({ output: '', error: '⏱ انتهت مهلة البناء (Compile)' });
+      if (c.failed) return res.json({ output: '', error: c.error || c.output || 'فشل البناء (Compile error)' });
+    }
+    const [rcmd, rargs] = def.run();
+    const r = await execInDir(rcmd, rargs, dir, EXEC_TIMEOUT_MS);
+    if (r.timedOut) return res.json({ output: '', error: '⏱ انتهت المهلة المسموحة (5 ثواني)' });
+    res.json({ output: r.output, error: r.error });
   } catch (e) {
     res.status(500).json({ error: 'حصل خطأ في السيرفر وإحنا بنجهّز الكود' });
   } finally {
-    fs.unlink(tmpFile).catch(() => {});
+    activeRuns--;
+    fs.rm(dir, { recursive: true, force: true }).catch(() => {});
   }
 });
 
 store.init()
+  .then(() => detectLanguages())
   .then(() => {
     app.listen(PORT, () => {
       console.log(`🚀 السيرفر شغال على http://localhost:${PORT} — تخزين: ${store.useDb ? 'PostgreSQL' : 'ملفات محلية'}`);
