@@ -46,13 +46,13 @@
     <div class="avatar"><svg class="icon-svg" style="width:28px;height:28px;color:#fff"><use href="#ic-grad"/></svg></div>
     <div>
       <div class="name">صفحتي</div>
-      <div class="status">تسجيل الدخول والمزامنة الحقيقية قريبًا</div>
+      <div class="status" id="accountStatus">جاري التحقق من الحساب...</div>
     </div>
   </div>
 
   <div class="pcard">
     <h3>📊 تقدّمي</h3>
-    <p>تقدّم الكتاب لسه هيتوحّد هنا بعد ما نظام الحسابات الحقيقي يشتغل. اللي تحت ده تقدّمك في المنصة التفاعلية.</p>
+    <p>تقدّمك في المنصة التفاعلية والكتاب بيتزامن مع حسابك تلقائيًا لما تكون مسجّل دخول، وبيتفتح على أي جهاز بنفس الحساب.</p>
     <div class="lvl-row">
       <div class="lvl-badge" id="lvlBadge">1</div>
       <div class="xp-bar-wrap">
@@ -92,6 +92,17 @@
     </a>
   </div>
 
+  <div class="pcard" id="adminCard" style="display:none;">
+    <h3>🛠️ إدارة الموقع (أدمن)</h3>
+    <p>لو عملت تعديل على الكود ومتظهرش على الموقع، اضغط هنا عشان يتحدّث. ملحوظة: التحديث التلقائي من GitHub شغال لوحده لو Auto-Deploy مفعّل على Render.</p>
+    <button class="dl-btn" id="redeployBtn" style="width:100%; cursor:pointer; border:none; font-family:inherit; text-align:start;">
+      <div>
+        <div class="t">🔄 حدّث الموقع دلوقتي</div>
+        <div class="s" id="redeployStatus">هيبعت طلب تحديث لـ Render</div>
+      </div>
+    </button>
+  </div>
+
   <div class="pcard">
     <h3>ℹ️ عن المنصة</h3>
     <p>علوم البرمجة منصة تعليمية عربية — بتجمع بين الكتاب (مراجعة وملخصات وامتحانات) والتفاعلي (تعلّم بالمحادثة، ألعاب، ومسارات برمجة وأمن سيبراني).</p>
@@ -116,6 +127,47 @@
     chip.className = 'medal-chip' + (earned ? '' : ' locked');
     chip.textContent = `${m.icon} ${m.name}`;
     medalsRow.appendChild(chip);
+  });
+
+  // حالة الحساب في الهيدر
+  (function renderAccountStatus() {
+    const el = document.getElementById('accountStatus');
+    const tok = localStorage.getItem('ps_token');
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('ps_user')); } catch { user = null; }
+    if (tok && user && user.full_name) {
+      el.textContent = 'مسجّل دخول كـ ' + user.full_name + ' · المزامنة شغالة ✅';
+    } else {
+      el.innerHTML = 'مش مسجّل دخول. <a href="index.html" style="color:var(--accent);">سجّل دخول</a> عشان تزامن تقدمك.';
+    }
+  })();
+
+  // زرار الأدمن: بيظهر بس لو السيرفر قال إن المستخدم أدمن
+  const API_BASE = 'https://programming-science.onrender.com';
+  const token = localStorage.getItem('ps_token');
+  if (token) {
+    fetch(API_BASE + '/api/auth/me', { headers: { Authorization: 'Bearer ' + token } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data || !data.isAdmin) return;
+        document.getElementById('adminCard').style.display = 'block';
+      })
+      .catch(() => {});
+  }
+
+  document.getElementById('redeployBtn').addEventListener('click', async () => {
+    const status = document.getElementById('redeployStatus');
+    status.textContent = 'جاري الإرسال...';
+    try {
+      const r = await fetch(API_BASE + '/api/admin/redeploy', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token },
+      });
+      const data = await r.json().catch(() => ({}));
+      status.textContent = r.ok ? '✅ ' + data.message : '❌ ' + (data.error || 'حصل خطأ');
+    } catch {
+      status.textContent = '❌ معرفتش أوصل للسيرفر';
+    }
   });
 </script>
 <script src="assets/js/index.js"></script>
