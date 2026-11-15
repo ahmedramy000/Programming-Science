@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: kudosk-api
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
