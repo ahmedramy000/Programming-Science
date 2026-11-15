@@ -5,27 +5,53 @@
 // قبل ما يعرض خيار "تثبيت نظام حقيقي"، وبيستخدمه full/ (PC) و light/ (موبايل) مع بعض.
 // ============================================
 
-// الحد الأدنى المعقول عشان نظام زي Kali يشتغل بشكل مقبول
-const V86_MIN_STORAGE_GB = 20;
-const V86_MIN_RAM_GB = 2; // تقديري - navigator.deviceMemory مش مدعومة في كل المتصفحات
+// الحد الأدنى المعقول عشان v86 يشتغل بشكل مقبول
+// ملحوظة: navigator.storage.estimate() بيرجع "حصة المتصفح" للموقع مش المساحة الفاضية على الجهاز،
+// فمش بنستخدمه كشرط. الـISO نفسه بيتقري كـ blob والـdisk الافتراضي بيتعمل async.
+const V86_MIN_RAM_GB = 2;   // الرامات الكلية للجهاز (لو المتصفح بيوضحها)
+const V86_MIN_CORES = 2;    // أنوية المعالج
 
 async function checkV86Capability() {
-  const result = { capable: false, storageGB: null, deviceMemoryGB: null, reasons: [] };
+  const result = {
+    capable: false,
+    specs: {
+      cpuCores: null,        // navigator.hardwareConcurrency
+      deviceMemoryGB: null,  // navigator.deviceMemory (Chromium بس، وبيوصل لحد 8)
+      wasm: false,           // v86 محتاج WebAssembly
+      mobile: /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent),
+      browserStorageQuotaGB: null, // معلومة بس، مش شرط
+    },
+    reasons: [],
+    warnings: [],
+  };
+
+  result.specs.wasm = typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function';
+  result.specs.cpuCores = navigator.hardwareConcurrency || null;
+  result.specs.deviceMemoryGB = navigator.deviceMemory || null;
 
   if (navigator.storage && navigator.storage.estimate) {
     try {
       const { quota } = await navigator.storage.estimate();
-      result.storageGB = quota ? +(quota / 1024 / 1024 / 1024).toFixed(1) : null;
+      result.specs.browserStorageQuotaGB = quota ? +(quota / 1024 / 1024 / 1024).toFixed(1) : null;
     } catch { /* تجاهل */ }
   }
-  // deviceMemory متاحة بس في متصفحات Chromium-based، لو مش متاحة منفترضش إنها مشكلة
-  result.deviceMemoryGB = navigator.deviceMemory || null;
 
-  if (result.storageGB !== null && result.storageGB < V86_MIN_STORAGE_GB) {
-    result.reasons.push(`مساحة التخزين المتاحة (${result.storageGB}GB) أقل من ${V86_MIN_STORAGE_GB}GB المطلوبة.`);
+  const s = result.specs;
+  if (!s.wasm) {
+    result.reasons.push('المتصفح مش بيدعم WebAssembly، ومحتاجه عشان يشغّل النظام. جرّب متصفح أحدث.');
   }
-  if (result.deviceMemoryGB !== null && result.deviceMemoryGB < V86_MIN_RAM_GB) {
-    result.reasons.push(`رامات الجهاز (${result.deviceMemoryGB}GB) أقل من ${V86_MIN_RAM_GB}GB الموصى بيها.`);
+  if (s.cpuCores !== null && s.cpuCores < V86_MIN_CORES) {
+    result.reasons.push(`عدد أنوية المعالج (${s.cpuCores}) أقل من ${V86_MIN_CORES} الموصى بيهم.`);
+  }
+  if (s.deviceMemoryGB !== null && s.deviceMemoryGB < V86_MIN_RAM_GB) {
+    result.reasons.push(`رامات الجهاز (${s.deviceMemoryGB}GB) أقل من ${V86_MIN_RAM_GB}GB الموصى بيها.`);
+  }
+
+  // معلومات مش بتمنع التشغيل: المتصفح مش بيوضح القيم دي في كل الحالات
+  if (s.cpuCores === null) result.warnings.push('المتصفح مش بيوضح عدد أنوية المعالج، هنكمل بدون الفحص ده.');
+  if (s.deviceMemoryGB === null) result.warnings.push('المتصفح مش بيوضح حجم الرامات (ده بيحصل غالبًا في Safari وFirefox)، هنكمل بدون الفحص ده.');
+  if (s.deviceMemoryGB !== null && s.deviceMemoryGB >= 8) {
+    result.warnings.push('المتصفح بيوضح 8GB كحد أقصى، فالرامات الفعلية ممكن تكون أكتر.');
   }
 
   result.capable = result.reasons.length === 0;

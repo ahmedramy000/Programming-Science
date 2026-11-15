@@ -254,3 +254,15 @@ window.PSProgress = {
   isPlacementTestTaken: psIsPlacementTestTaken,
   completePlacementTest: psCompletePlacementTest,
 };
+
+
+// تحميل ملف مزامنة الحساب (تقدم + بيانات الكتاب) جنب الملف ده في نفس المسار
+(function loadAccountSync() {
+  try {
+    const cs = document.currentScript;
+    if (!cs || !cs.src) return;
+    const s = document.createElement('script');
+    s.src = cs.src.replace(/progress\.js(\?.*)?$/, 'account-sync.js');
+    document.head.appendChild(s);
+  } catch (e) { /* تجاهل */ }
+})();
