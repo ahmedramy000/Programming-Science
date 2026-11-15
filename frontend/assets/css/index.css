@@ -23,7 +23,7 @@ body{
 
 .modes{
   display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:18px; max-width:820px; margin:0 auto;
+  gap:18px; max-width:1100px; margin:0 auto;
 }
 .mode-card{
   background:var(--panel); border:1px solid var(--border); border-radius:14px;

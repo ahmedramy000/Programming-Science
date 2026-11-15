@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0b0c0f">
 <link rel="stylesheet" href="../assets/css/index.css">
 <style>
-  .wrap{max-width:680px; margin:0 auto; padding:20px 18px 50px;}
+  .wrap{max-width:min(100%,1280px); margin:0 auto; padding:20px 18px 50px;}
   header{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
   header a{color:var(--muted); text-decoration:none; font-size:12px;}
   header h1{font-size:17px; margin:0;}
@@ -23,10 +23,12 @@
   .lang-chip .dot{display:inline-block; width:6px; height:6px; border-radius:50%; margin-inline-start:5px;}
   .lang-chip .dot.ready{background:#2ecc71;}
   .lang-chip .dot.soon{background:#8a8f9c;}
+  .lang-chip .dot.checking{background:#e0b65c;}
+  .server-status{font-size:11.5px; color:var(--muted); margin:0 0 10px;}
 
   .editor-box{background:#1e1e1e; border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:12px;}
   .editor-box textarea{
-    width:100%; min-height:200px; background:transparent; border:none; outline:none; resize:vertical;
+    width:100%; min-height:200px; min-height:clamp(200px,40vh,460px); background:transparent; border:none; outline:none; resize:vertical;
     color:#d4d4d4; font-family:'IBM Plex Mono',monospace; font-size:13px; line-height:1.8; padding:14px;
     direction:ltr; text-align:left;
   }
@@ -49,6 +51,7 @@
     <span style="width:60px;"></span>
   </header>
 
+  <div class="server-status" id="serverStatus"></div>
   <div class="lang-row" id="langRow"></div>
 
   <div class="editor-box">
@@ -63,35 +66,42 @@
 </div>
 
 <script>
-// 12 لغة — 3 شغالين فعليًا هنا (JS تنفيذ حقيقي، HTML/CSS معاينة حقيقية)،
-// والباقي محتاج سيرفر تنفيذ كود (زي Judge0/Piston) هنضيفه بعدين.
+// المحرر الحر: JS وHTML وCSS بيشتغلوا في المتصفح نفسه، والباقي بيتنفّذ على السيرفر.
+// السيرفر هو اللي بيقول إيه اللغات الجاهزة فعلًا عنده (GET /api/languages)، فمفيش لغة بتظهر "جاهزة" وهي مش شغالة.
+const API_BASE = 'https://programming-science.onrender.com';
+
+// local: بيتنفذ في المتصفح | server: اسم اللغة عند السيرفر | بدون الاتنين: مفيش تنفيذ لسه
 const LANGUAGES = [
-  { id: 'js', name: 'JavaScript', ready: true, starter: 'console.log("Hello from JS!");' },
-  { id: 'html', name: 'HTML', ready: true, starter: '<h1 style="font-family:sans-serif">أهلًا!</h1>' },
-  { id: 'css', name: 'CSS', ready: true, starter: 'body{background:#7c5cff; color:#fff; font-family:sans-serif; padding:20px;}\n/* جرب غيّر الألوان */' },
-  { id: 'py', name: 'Python', ready: false, starter: 'print("Hello from Python!")' },
-  { id: 'cpp', name: 'C++', ready: false, starter: '#include <iostream>\nint main(){ std::cout << "Hello"; }' },
-  { id: 'c', name: 'C', ready: false, starter: '#include <stdio.h>\nint main(){ printf("Hello"); }' },
-  { id: 'java', name: 'Java', ready: false, starter: 'public class Main { public static void main(String[] a){ System.out.println("Hello"); } }' },
-  { id: 'csharp', name: 'C#', ready: false, starter: 'Console.WriteLine("Hello");' },
-  { id: 'php', name: 'PHP', ready: false, starter: '<?php echo "Hello"; ?>' },
-  { id: 'ruby', name: 'Ruby', ready: false, starter: 'puts "Hello from Ruby!"' },
-  { id: 'ts', name: 'TypeScript', ready: false, starter: 'const msg: string = "Hello"; console.log(msg);' },
-  { id: 'sql', name: 'SQL', ready: false, starter: 'SELECT "Hello" AS greeting;' },
+  { id: 'js', name: 'JavaScript', local: true, starter: 'console.log("Hello from JS!");' },
+  { id: 'html', name: 'HTML', local: true, starter: '<h1 style="font-family:sans-serif">أهلًا!</h1>' },
+  { id: 'css', name: 'CSS', local: true, starter: 'body{background:#7c5cff; color:#fff; font-family:sans-serif; padding:20px;}\n/* جرب غيّر الألوان */' },
+  { id: 'py', name: 'Python', server: 'python', starter: 'print("Hello from Python!")' },
+  { id: 'cpp', name: 'C++', server: 'cpp', starter: '#include <iostream>\nint main(){ std::cout << "Hello"; }' },
+  { id: 'c', name: 'C', server: 'c', starter: '#include <stdio.h>\nint main(){ printf("Hello"); return 0; }' },
+  { id: 'java', name: 'Java', server: 'java', starter: 'public class Main { public static void main(String[] a){ System.out.println("Hello"); } }' },
+  { id: 'csharp', name: 'C#', starter: 'Console.WriteLine("Hello");' },
+  { id: 'php', name: 'PHP', server: 'php', starter: '<?php echo "Hello"; ?>' },
+  { id: 'ruby', name: 'Ruby', server: 'ruby', starter: 'puts "Hello from Ruby!"' },
+  { id: 'ts', name: 'TypeScript', starter: 'const msg: string = "Hello"; console.log(msg);' },
+  { id: 'sql', name: 'SQL', starter: 'SELECT "Hello" AS greeting;' },
 ];
+// حالة كل لغة: 'ready' جاهزة | 'checking' بنسأل السيرفر | 'soon' مش متاحة
+const state = {};
+LANGUAGES.forEach((l) => { state[l.id] = l.local ? 'ready' : (l.server ? 'checking' : 'soon'); });
 
 let current = LANGUAGES[0];
 const langRow = document.getElementById('langRow');
 const codeInput = document.getElementById('codeInput');
 const resultBox = document.getElementById('resultBox');
 const runBtn = document.getElementById('runBtn');
+const serverStatus = document.getElementById('serverStatus');
 
 function renderChips() {
   langRow.innerHTML = '';
   LANGUAGES.forEach((lang) => {
     const chip = document.createElement('button');
     chip.className = 'lang-chip' + (lang.id === current.id ? ' active' : '');
-    chip.innerHTML = `${lang.name}<span class="dot ${lang.ready ? 'ready' : 'soon'}"></span>`;
+    chip.innerHTML = `${lang.name}<span class="dot ${state[lang.id]}"></span>`;
     chip.addEventListener('click', () => { current = lang; codeInput.value = lang.starter; renderChips(); resultBox.innerHTML = ''; });
     langRow.appendChild(chip);
   });
@@ -99,29 +109,81 @@ function renderChips() {
 renderChips();
 codeInput.value = current.starter;
 
-runBtn.addEventListener('click', () => {
-  if (!current.ready) {
-    resultBox.innerHTML = `<div class="soon-note">⏳ تشغيل ${current.name} لسه قريبًا — محتاج سيرفر تنفيذ كود، مش حاجة بتشتغل في المتصفح لوحدها. JS وHTML وCSS شغالين دلوقتي فعليًا.</div>`;
+function showText(text, cls) {
+  resultBox.innerHTML = '';
+  const el = cls ? document.createElement('div') : document.createElement('pre');
+  if (cls) el.className = cls; else el.className = '';
+  el.textContent = text;
+  resultBox.appendChild(el);
+}
+
+// نسأل السيرفر إيه اللغات الجاهزة (السيرفر المجاني بينام، فأول طلب ممكن ياخد لحد دقيقة)
+(async () => {
+  serverStatus.textContent = '⏳ بنكلّم السيرفر (لو كان نايم ممكن ياخد لحد دقيقة)...';
+  try {
+    const res = await fetch(`${API_BASE}/api/languages`, { signal: AbortSignal.timeout(70000) });
+    const data = await res.json();
+    const ready = new Set((data.languages || []).filter((l) => l.ready).map((l) => l.id));
+    LANGUAGES.forEach((l) => { if (l.server) state[l.id] = ready.has(l.server) ? 'ready' : 'soon'; });
+    const names = LANGUAGES.filter((l) => l.server && state[l.id] === 'ready').map((l) => l.name);
+    serverStatus.textContent = '🟢 السيرفر متصل' + (names.length ? ' — شغّال على: ' + names.join('، ') : '');
+  } catch {
+    LANGUAGES.forEach((l) => { if (l.server) state[l.id] = 'soon'; });
+    serverStatus.textContent = '🔴 السيرفر مش متاح دلوقتي — JavaScript وHTML وCSS شغالين من غيره';
+  }
+  renderChips();
+})();
+
+runBtn.addEventListener('click', async () => {
+  const lang = current;
+  if (state[lang.id] === 'soon') {
+    resultBox.innerHTML = '';
+    const note = document.createElement('div');
+    note.className = 'soon-note';
+    note.textContent = lang.server
+      ? `⏳ ${lang.name} مش متاحة على السيرفر دلوقتي (يا السيرفر نايم أو اللغة مش متثبتة عليه). جرّب تاني بعد شوية.`
+      : `⏳ تشغيل ${lang.name} لسه غير متاح — اللغات الشغالة دلوقتي معلّمة بنقطة خضرا.`;
+    resultBox.appendChild(note);
     return;
   }
-  if (current.id === 'js') {
+  if (lang.id === 'js') {
     const logs = [];
     const fakeConsole = { log: (...a) => logs.push(a.map((x) => (typeof x === 'object' ? JSON.stringify(x) : String(x))).join(' ')) };
     try {
       new Function('console', codeInput.value)(fakeConsole);
-      resultBox.innerHTML = `<pre>${(logs.join('\n') || '✅ اتنفّذ من غير مشاكل (معندوش console.log)').replace(/</g, '&lt;')}</pre>`;
+      showText(logs.join('\n') || '✅ اتنفّذ من غير مشاكل (معندوش console.log)');
     } catch (e) {
-      resultBox.innerHTML = `<pre>⚠️ خطأ: ${e.message}</pre>`;
+      showText('⚠️ خطأ: ' + e.message);
     }
     return;
   }
-  if (current.id === 'html' || current.id === 'css') {
-    const html = current.id === 'html' ? codeInput.value : `<style>${codeInput.value}</style><p>نص تجريبي عشان تشوف شكل الـCSS</p>`;
+  if (lang.id === 'html' || lang.id === 'css') {
+    const html = lang.id === 'html' ? codeInput.value : `<style>${codeInput.value}</style><p>نص تجريبي عشان تشوف شكل الـCSS</p>`;
     resultBox.innerHTML = '';
     const iframe = document.createElement('iframe');
     iframe.setAttribute('sandbox', 'allow-scripts');
     iframe.srcdoc = html;
     resultBox.appendChild(iframe);
+    return;
+  }
+  // باقي اللغات: تنفيذ على السيرفر
+  runBtn.disabled = true;
+  showText('⏳ بيشتغل على السيرفر (لو كان نايم ممكن ياخد لحد دقيقة)...');
+  try {
+    const res = await fetch(`${API_BASE}/run`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: codeInput.value, language: lang.server }),
+      signal: AbortSignal.timeout(90000),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { showText('⚠️ ' + (data.error || 'السيرفر رجّع خطأ ' + res.status)); return; }
+    const out = (data.output || '') + (data.error ? (data.output ? '\n' : '') + '⚠️ ' + data.error : '');
+    showText(out || '✅ اتنفّذ من غير ما يطبع حاجة');
+  } catch {
+    showText('❌ معرفتش أوصل للسيرفر. جرّب تاني بعد شوية.');
+  } finally {
+    runBtn.disabled = false;
   }
 });
 </script>

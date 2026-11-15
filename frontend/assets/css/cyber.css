@@ -31,7 +31,7 @@ header a{color:var(--muted); text-decoration:none; font-size:13px;}
 .ps-toast-xp{color:#2ecc71; font-weight:bold; font-size:13px;}
 .ps-toast-coins{color:#f5c518; font-weight:bold; font-size:13px;}
 .ps-toast-medal{color:#ffd166; font-size:13px;}
-main{max-width:880px; margin:0 auto; padding:24px 16px 60px;}
+main{max-width:min(100%,1280px); margin:0 auto; padding:24px 16px 60px;}
 
 /* ---- مركز الدروس ---- */
 .hub-intro{text-align:center; margin-bottom:26px;}
@@ -181,7 +181,8 @@ main{max-width:880px; margin:0 auto; padding:24px 16px 60px;}
 .eng-term{
   background:#0a0b0d; border:1px solid var(--border); border-radius:12px; padding:12px 14px;
   font-family:'Courier New',monospace; font-size:12.5px; direction:ltr; text-align:left;
-  max-height:260px; overflow-y:auto; cursor:text;
+  max-height:260px; max-height:clamp(220px,45dvh,520px); overflow-y:auto; cursor:text;
+  overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
 }
 .eng-term-lines{display:flex; flex-direction:column; gap:2px;}
 .eng-term-line{color:#d7dae0; white-space:pre-wrap; word-break:break-word;}
@@ -194,6 +195,7 @@ main{max-width:880px; margin:0 auto; padding:24px 16px 60px;}
   font-family:inherit; font-size:12.5px; direction:ltr;
 }
 .eng-term-answer-row{display:flex; gap:8px;}
+@media (pointer:coarse){ .eng-term-input,.eng-term-answer,.eng-term{font-size:16px;} }
 .eng-term-answer{
   flex:1; background:var(--panel); border:1px solid var(--border); border-radius:10px;
   padding:10px 12px; color:var(--text); font-family:inherit; font-size:13px;

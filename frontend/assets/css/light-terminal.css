@@ -19,6 +19,7 @@ header a{color:var(--muted); text-decoration:none; font-size:13px;}
 .term-line.term-echo{color:#e6e8ee;}
 .term-line.term-err{color:#ff6b6b;}
 .term-input-row{display:flex; align-items:center; gap:8px; margin-top:6px;}
+@media (pointer:coarse){ .term-input-row input{font-size:16px;} }
 .prompt{color:var(--accent); white-space:nowrap;}
 #termInput{
   flex:1; background:transparent; border:none; outline:none; color:#fff;

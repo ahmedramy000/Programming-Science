@@ -249,10 +249,13 @@ inputEl.addEventListener('keydown', (e) => {
     inputEl.value = history[historyIdx] || '';
     return;
   }
-  if (e.key !== 'Enter') return;
+});
 
+document.getElementById('termForm').addEventListener('submit', (e) => {
+  e.preventDefault();
   const raw = inputEl.value.trim();
   inputEl.value = '';
+  inputEl.focus({ preventScroll: true });
   if (!raw) return;
 
   history.push(raw);

@@ -18,7 +18,7 @@ header a{color:var(--muted); text-decoration:none; font-size:13px;}
   background:var(--surface2); color:var(--text); border:1px solid var(--border); border-radius:20px;
   padding:5px 14px; font-size:12px; cursor:pointer;
 }
-main{max-width:880px; margin:0 auto; padding:24px 16px 60px;}
+main{max-width:min(100%,1280px); margin:0 auto; padding:24px 16px 60px;}
 
 /* ---- اختيار الصف ---- */
 .grade-picker{max-width:420px; margin:60px auto 0; text-align:center; padding:0 16px;}

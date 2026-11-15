@@ -20,10 +20,10 @@
 
 <div class="term-screen" id="termScreen">
   <div class="term-lines" id="termLines"></div>
-  <div class="term-input-row">
+  <form class="term-input-row" id="termForm" action="javascript:void(0)" autocomplete="off">
     <span class="prompt" id="promptLabel">kudosk@kali:~$</span>
-    <input type="text" id="termInput" autocomplete="off" autocapitalize="off" spellcheck="false">
-  </div>
+    <input type="text" id="termInput" enterkeyhint="send" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  </form>
 </div>
 
 <script src="../assets/v86/libv86.js"></script>

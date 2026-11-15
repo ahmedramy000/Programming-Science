@@ -2497,3 +2497,28 @@ document.addEventListener('DOMContentLoaded', ()=>{
   checkForPlatformUpdate();
   setTimeout(checkWhatsappReminder, 700); // تأخير بسيط عشان ميتزاحمش مع مودال الاسم لأول مرة
 });
+
+
+// ---------- تحديث الموقع كله (الباك إند + الفرونت) — للأدمن بس ----------
+const PS_SITE_API = 'https://programming-science.onrender.com';
+async function adminRedeployAll(){
+  const tok = localStorage.getItem('ps_token');
+  if(!tok){ showToast('❌ سجّل دخول بحساب الأدمن الأول'); return; }
+  showToast('⏳ جاري إرسال طلب تحديث الموقع...');
+  try{
+    const r = await fetch(PS_SITE_API + '/api/admin/redeploy', { method:'POST', headers:{ Authorization:'Bearer ' + tok } });
+    const d = await r.json().catch(()=>({}));
+    showToast(r.ok ? ('✅ ' + (d.message || 'اتبعت طلب التحديث')) : ('❌ ' + (d.error || 'حصل خطأ')));
+  }catch(e){
+    showToast('❌ معرفتش أوصل للسيرفر');
+  }
+}
+// إظهار الزرار بس لو الحساب اللي مسجّل دخول أدمن
+(function checkAdminRedeploy(){
+  const tok = localStorage.getItem('ps_token');
+  if(!tok) return;
+  fetch(PS_SITE_API + '/api/auth/me', { headers:{ Authorization:'Bearer ' + tok } })
+    .then(r => r.ok ? r.json() : null)
+    .then(d => { if(d && d.isAdmin){ const c=document.getElementById('adminRedeployCard'); if(c) c.style.display='flex'; } })
+    .catch(()=>{});
+})();

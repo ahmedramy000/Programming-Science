@@ -5,7 +5,7 @@ body{background:var(--bg); color:var(--text); font-family:system-ui,sans-serif;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);}
 header{display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:1px solid var(--border); background:var(--panel);}
 header a{color:var(--muted); text-decoration:none; font-size:13px;}
-main{max-width:640px; margin:0 auto; padding:40px 18px;}
+main{max-width:min(100%,1280px); margin:0 auto; padding:40px 18px;}
 h1{font-size:22px;}
 .card{
   background:var(--panel); border:1px solid var(--border); border-radius:14px;

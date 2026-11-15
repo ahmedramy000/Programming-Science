@@ -1,4 +1,4 @@
-const CACHE_NAME = 'elom-elbarmaga-v36';
+const CACHE_NAME = 'elom-elbarmaga-v37';
 // ملفات v86 الكبيرة (المحرك والـBIOS) اختيارية - لو المستخدم لسه مضافهاش في
 // assets/v86/، مش هنوقف تسطيب السيرفر وركر كله عشانها (كاشينج منفصل تحت)
 const OPTIONAL_ASSETS = [
@@ -17,6 +17,7 @@ const ASSETS = [
   '/assets/icons.svg',
   '/assets/js/icons-inject.js',
   '/assets/js/progress.js',
+  '/assets/js/account-sync.js',
   '/library/index.html',
   '/editor/index.html',
   '/manifest.json',
@@ -111,12 +112,42 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  const req = event.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+
+  // طلبات الـAPI (المزامنة، الحساب، الصحة، اللغات): دايمًا من الشبكة ومتتخزنش أبدًا (أي دومين)
+  if (url.pathname.startsWith('/api/') || url.pathname === '/run') return;
+
+  const sameOrigin = url.origin === self.location.origin;
+  const isCode = sameOrigin && (req.mode === 'navigate' || url.pathname.endsWith('/') || /\.(html|js|css|json)$/.test(url.pathname));
+
+  if (isCode) {
+    // صفحات وكود الموقع: الشبكة الأول (أي تحديث بعد النشر يظهر على طول)، والكاش للأوفلاين بس
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res.ok && res.status === 200) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+          }
+          return res;
+        })
+        .catch(() =>
+          caches.match(req, { ignoreSearch: true }).then((m) => m || caches.match('/index.html'))
+        )
+    );
+    return;
+  }
+
+  // الباقي (صور، wasm، خطوط، مكتبات CDN): الكاش الأول زي الأول
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request).then((res) => {
-        const resClone = res.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
+    caches.match(req).then((cached) => {
+      return cached || fetch(req).then((res) => {
+        if (res.ok || res.type === 'opaque') {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+        }
         return res;
       }).catch(() => cached);
     })

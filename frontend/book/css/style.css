@@ -52,6 +52,7 @@
 /* ---------- أبعاد جديدة: تابلت وبيسي (الموبايل هو الافتراضي) ---------- */
 @media (min-width:768px){ :root{ --app-max:760px; } }
 @media (min-width:1024px){ :root{ --app-max:1040px; } }
+@media (min-width:1280px){ :root{ --app-max:1240px; } }
 *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
 html,body{height:100%;}
 body{

@@ -717,10 +717,10 @@ const KudoskEngine = (() => {
         <p class="eng-term-brief">${config.intro || ''}</p>
         <div class="eng-term" id="engTermBox">
           <div class="eng-term-lines" id="engTermLines"></div>
-          <div class="eng-term-inrow">
+          <form class="eng-term-inrow" id="engTermForm" action="javascript:void(0)" autocomplete="off">
             <span class="eng-term-prompt" id="engTermPrompt"></span>
-            <input class="eng-term-input" id="engTermInput" autocomplete="off" autocapitalize="off" />
-          </div>
+            <input class="eng-term-input" id="engTermInput" type="text" enterkeyhint="send" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          </form>
         </div>
         ${tasksHtml}
         ${!hasTasks ? `
@@ -745,7 +745,11 @@ const KudoskEngine = (() => {
       d.className = 'eng-term-line' + (cls ? ' ' + cls : '');
       d.textContent = text;
       linesEl.appendChild(d);
-      linesEl.scrollTop = linesEl.scrollHeight;
+      scrollTermToBottom();
+    }
+    function scrollTermToBottom() {
+      const box = container.querySelector('#engTermBox');
+      if (box) box.scrollTop = box.scrollHeight;
     }
     function updatePrompt() { promptEl.textContent = `kali:${promptPath()}$`; }
 
@@ -779,17 +783,20 @@ const KudoskEngine = (() => {
     print(config.welcomeMsg || 'اكتب "help" عشان تشوف الأوامر المتاحة.');
     updatePrompt();
 
-    inputEl.addEventListener('keydown', (e) => {
-      if (e.key !== 'Enter') return;
+    container.querySelector('#engTermForm').addEventListener('submit', (e) => {
+      e.preventDefault();
       const raw = inputEl.value.trim();
       inputEl.value = '';
-      if (!raw) return;
-      print(`${promptEl.textContent} ${raw}`, 'eng-term-echo');
-      const [cmd, ...rest] = raw.split(' ');
-      if (CMDS[cmd]) CMDS[cmd](rest.join(' '));
-      else print(`bash: ${cmd}: الأمر مش معروف`, 'eng-term-err');
+      if (raw) {
+        print(`${promptEl.textContent} ${raw}`, 'eng-term-echo');
+        const [cmd, ...rest] = raw.split(' ');
+        if (CMDS[cmd]) CMDS[cmd](rest.join(' '));
+        else print(`bash: ${cmd}: الأمر مش معروف`, 'eng-term-err');
+      }
+      scrollTermToBottom();
+      inputEl.focus({ preventScroll: true });
     });
-    container.querySelector('#engTermBox').addEventListener('click', () => inputEl.focus());
+    container.querySelector('#engTermBox').addEventListener('click', () => inputEl.focus({ preventScroll: true }));
 
     if (hasTasks) {
       // غرفة بمهام متعددة: كل مهمة ليها input/submit منفصل، وكل التاسكات لازم تتحل عشان يظهر زرار "التالي"
@@ -825,6 +832,9 @@ const KudoskEngine = (() => {
         taskAnswerEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') trySubmitTask(); });
       });
     } else {
+      container.querySelector('#engTermAnswer').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); container.querySelector('#engTermSubmit').click(); }
+      });
       container.querySelector('#engTermSubmit').addEventListener('click', () => {
         const answerEl = container.querySelector('#engTermAnswer');
         const given = answerEl.value.trim();
