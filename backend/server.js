@@ -11,34 +11,18 @@ const { execFile } = require('child_process');
 const fs = require('fs/promises');
 const os = require('os');
 const crypto = require('crypto');
+const store = require('./store');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 // ============================================
-// نظام تسجيل الدخول — MVP بسيط (ملف JSON بدل قاعدة بيانات حقيقية مؤقتًا)
-// لما تجهز تنقل لـ PostgreSQL، schema.sql فيه جدول users جاهز بنفس الأعمدة.
+// نظام تسجيل الدخول: المستخدمين والجلسات في PostgreSQL (أو ملفات محلية لو مفيش DATABASE_URL)
 // ============================================
-const USERS_FILE = path.join(__dirname, 'data', 'users.json');
-const tokens = new Map(); // token -> userId (في الذاكرة فقط؛ بيتصفر لما السيرفر يعيد التشغيل)
-
-async function readUsers() {
-  try {
-    const raw = await fs.readFile(USERS_FILE, 'utf8');
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
-}
-async function writeUsers(users) {
-  await fs.mkdir(path.dirname(USERS_FILE), { recursive: true });
-  await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
-}
-
 function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
   const hash = crypto.scryptSync(password, salt, 64).toString('hex');
   return `${salt}:${hash}`;
@@ -52,69 +36,150 @@ function publicUser(u) {
   return { id: u.id, full_name: u.full_name, email: u.email, age: u.age };
 }
 
-app.post('/api/auth/signup', async (req, res) => {
-  const { full_name, email, password, age } = req.body || {};
-  if (!full_name || !email || !password) {
-    return res.status(400).json({ error: 'الاسم والإيميل وكلمة المرور مطلوبين' });
-  }
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'كلمة المرور لازم تكون 6 حروف على الأقل' });
-  }
-  const users = await readUsers();
-  if (users.some((u) => u.email.toLowerCase() === String(email).toLowerCase())) {
-    return res.status(409).json({ error: 'الإيميل ده مسجل قبل كده' });
-  }
-  const user = {
-    id: crypto.randomUUID(),
-    full_name,
-    email: String(email).toLowerCase(),
-    password_hash: hashPassword(password),
-    age: age ? parseInt(age, 10) : null,
-    created_at: new Date().toISOString(),
-  };
-  users.push(user);
-  await writeUsers(users);
+function bearerToken(req) {
+  const auth = req.headers.authorization || '';
+  return auth.startsWith('Bearer ') ? auth.slice(7) : null;
+}
 
-  const token = crypto.randomBytes(24).toString('hex');
-  tokens.set(token, user.id);
-  res.json({ token, user: publicUser(user) });
+app.post('/api/auth/signup', async (req, res) => {
+  try {
+    const { full_name, email, password, age } = req.body || {};
+    if (!full_name || !email || !password) {
+      return res.status(400).json({ error: 'الاسم والإيميل وكلمة المرور مطلوبين' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'كلمة المرور لازم تكون 6 حروف على الأقل' });
+    }
+    if (await store.findUserByEmail(email)) {
+      return res.status(409).json({ error: 'الإيميل ده مسجل قبل كده' });
+    }
+    const user = {
+      id: crypto.randomUUID(),
+      full_name,
+      email: String(email).toLowerCase(),
+      password_hash: hashPassword(password),
+      age: age ? parseInt(age, 10) : null,
+      created_at: new Date().toISOString(),
+    };
+    await store.createUser(user);
+    const token = crypto.randomBytes(24).toString('hex');
+    await store.createSession(token, user.id);
+    res.json({ token, user: publicUser(user) });
+  } catch (e) {
+    res.status(500).json({ error: 'حصل خطأ في التسجيل، جرّب تاني' });
+  }
 });
 
 app.post('/api/auth/login', async (req, res) => {
-  const { email, password } = req.body || {};
-  if (!email || !password) {
-    return res.status(400).json({ error: 'الإيميل وكلمة المرور مطلوبين' });
+  try {
+    const { email, password } = req.body || {};
+    if (!email || !password) {
+      return res.status(400).json({ error: 'الإيميل وكلمة المرور مطلوبين' });
+    }
+    const user = await store.findUserByEmail(email);
+    if (!user || !verifyPassword(password, user.password_hash)) {
+      return res.status(401).json({ error: 'الإيميل أو كلمة المرور غلط' });
+    }
+    const token = crypto.randomBytes(24).toString('hex');
+    await store.createSession(token, user.id);
+    res.json({ token, user: publicUser(user) });
+  } catch (e) {
+    res.status(500).json({ error: 'حصل خطأ في الدخول، جرّب تاني' });
   }
-  const users = await readUsers();
-  const user = users.find((u) => u.email.toLowerCase() === String(email).toLowerCase());
-  if (!user || !verifyPassword(password, user.password_hash)) {
-    return res.status(401).json({ error: 'الإيميل أو كلمة المرور غلط' });
-  }
-  const token = crypto.randomBytes(24).toString('hex');
-  tokens.set(token, user.id);
-  res.json({ token, user: publicUser(user) });
 });
 
-function requireAuth(req, res, next) {
-  const auth = req.headers.authorization || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  const userId = token && tokens.get(token);
-  if (!userId) return res.status(401).json({ error: 'لازم تسجل دخول الأول' });
-  req.userId = userId;
-  next();
+async function requireAuth(req, res, next) {
+  try {
+    const userId = await store.getSessionUserId(bearerToken(req));
+    if (!userId) return res.status(401).json({ error: 'لازم تسجل دخول الأول' });
+    req.userId = userId;
+    next();
+  } catch (e) {
+    res.status(500).json({ error: 'خطأ في التحقق من الجلسة' });
+  }
+}
+
+// الأدمن = الإيميل اللي في متغير البيئة ADMIN_EMAIL على Render (مش مكتوب في الكود)
+function isAdminUser(u) {
+  const adminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+  return !!adminEmail && !!u && (u.email || '').trim().toLowerCase() === adminEmail;
 }
 
 app.get('/api/auth/me', requireAuth, async (req, res) => {
-  const users = await readUsers();
-  const user = users.find((u) => u.id === req.userId);
+  const user = await store.findUserById(req.userId);
   if (!user) return res.status(404).json({ error: 'المستخدم مش موجود' });
-  res.json({ user: publicUser(user) });
+  res.json({ user: publicUser(user), isAdmin: isAdminUser(user) });
 });
 
-app.post('/api/auth/logout', requireAuth, (req, res) => {
-  const auth = req.headers.authorization || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  if (token) tokens.delete(token);
+// زرار "تحديث الموقع" للأدمن: بيبعت طلب لـ Render Deploy Hook (سري في متغير البيئة RENDER_DEPLOY_HOOK_URL)
+app.post('/api/admin/redeploy', requireAuth, async (req, res) => {
+  const user = await store.findUserById(req.userId);
+  if (!isAdminUser(user)) return res.status(403).json({ error: 'مش مسموح' });
+  // بيحدّث الاتنين: الباك إند على Render، والفرونت على Vercel (الـhooks سرية في متغيرات البيئة)
+  const targets = [
+    { name: 'Render', url: process.env.RENDER_DEPLOY_HOOK_URL },
+    { name: 'Vercel', url: process.env.VERCEL_DEPLOY_HOOK_URL },
+  ];
+  const results = await Promise.all(targets.map(async (t) => {
+    if (!t.url) return { name: t.name, ok: false, error: 'مش متظبط' };
+    try {
+      const r = await fetch(t.url, { method: 'POST' });
+      return { name: t.name, ok: r.ok, error: r.ok ? null : `رجّع ${r.status}` };
+    } catch {
+      return { name: t.name, ok: false, error: 'معرفتش أوصل' };
+    }
+  }));
+  const allOk = results.every((r) => r.ok);
+  const summary = results.map((r) => `${r.name}: ${r.ok ? '✅' : '❌ ' + r.error}`).join(' | ');
+  res.status(allOk ? 200 : 502).json({
+    ok: allOk,
+    results,
+    message: allOk ? 'اتبعت طلب التحديث لـ Render وVercel. الموقع هيتحدّث خلال دقايق.' : summary,
+    error: allOk ? undefined : summary,
+  });
+});
+
+// ============================================
+// مزامنة الحساب: التقدم وبيانات الكتاب، لكل مستخدم في القاعدة
+// items = { "مفتاح localStorage": { value: "النص الخام", mtime: وقت آخر تعديل } }
+// ============================================
+function isSyncKey(k) {
+  return k === 'ps_progress_v1' || k === 'kudosk_cyber_progress' ||
+    k === 'zakera_registry' || k === 'zakera_active_id' ||
+    /^zakera_(profile_|research_draft_)/.test(k);
+}
+
+app.get('/api/progress', requireAuth, async (req, res) => {
+  try {
+    res.json({ items: await store.getProgressItems(req.userId) });
+  } catch (e) {
+    res.status(500).json({ error: 'خطأ في جلب التقدم' });
+  }
+});
+
+app.put('/api/progress', requireAuth, async (req, res) => {
+  try {
+    const incoming = req.body && req.body.items;
+    if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) {
+      return res.status(400).json({ error: 'البيانات مش صح' });
+    }
+    const clean = {};
+    Object.keys(incoming).forEach((k) => {
+      const inc = incoming[k];
+      if (!isSyncKey(k) || !inc || typeof inc.value !== 'string') return;
+      clean[k] = { value: inc.value, mtime: Number(inc.mtime) || 0 };
+    });
+    const total = Object.values(clean).reduce((n, it) => n + it.value.length, 0);
+    if (total > 9000000) return res.status(413).json({ error: 'بيانات الحساب كبيرة أوي' });
+    const items = await store.upsertProgressItems(req.userId, clean);
+    res.json({ ok: true, items });
+  } catch (e) {
+    res.status(500).json({ error: 'خطأ في حفظ التقدم' });
+  }
+});
+
+app.post('/api/auth/logout', requireAuth, async (req, res) => {
+  try { await store.deleteSession(bearerToken(req)); } catch (e) { /* تجاهل */ }
   res.json({ ok: true });
 });
 
@@ -224,6 +289,13 @@ app.post('/run', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 السيرفر شغال على http://localhost:${PORT}`);
-});
+store.init()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 السيرفر شغال على http://localhost:${PORT} — تخزين: ${store.useDb ? 'PostgreSQL' : 'ملفات محلية'}`);
+    });
+  })
+  .catch((e) => {
+    console.error('فشل الاتصال بقاعدة البيانات:', e.message);
+    process.exit(1);
+  });
