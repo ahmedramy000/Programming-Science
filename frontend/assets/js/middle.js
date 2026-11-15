@@ -1,5 +1,5 @@
 // غيّر العنوان ده لو هوست الباك إند بتاعك مختلف
-const API_BASE = 'https://kudosk-api.onrender.com';
+const API_BASE = 'https://programming-science.onrender.com';
 const API_URL = `${API_BASE}/run`;
 
 // مؤشر حالة الاتصال بالسيرفر وقت فتح الصفحة
