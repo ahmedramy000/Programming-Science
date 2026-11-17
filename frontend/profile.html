@@ -136,11 +136,32 @@
     let user = null;
     try { user = JSON.parse(localStorage.getItem('ps_user')); } catch { user = null; }
     if (tok && user && user.full_name) {
-      el.textContent = 'مسجّل دخول كـ ' + user.full_name + ' · المزامنة شغالة ✅';
+      el.textContent = 'مسجّل دخول كـ ' + user.full_name + ' · المزامنة شغالة ✅ · ';
+      const out = document.createElement('a');
+      out.href = '#'; out.textContent = 'تسجيل الخروج'; out.style.color = 'var(--accent)';
+      out.addEventListener('click', (ev) => { ev.preventDefault(); doLogout(); });
+      el.appendChild(out);
     } else {
       el.innerHTML = 'مش مسجّل دخول. <a href="index.html" style="color:var(--accent);">سجّل دخول</a> عشان تزامن تقدمك.';
     }
   })();
+
+  // تسجيل الخروج: بنزامن آخر تقدم الأول، وبعدين نمسح بيانات الحساب من المتصفح (محفوظة على السيرفر)
+  async function doLogout() {
+    const tok = localStorage.getItem('ps_token');
+    let synced = true;
+    try { if (window.PSAccountSync) synced = await window.PSAccountSync.pushNow(); } catch { synced = false; }
+    if (!synced && !confirm('مقدرتش أزامن آخر تقدّم ليك قبل الخروج، وممكن تخسر جزء منه. تخرج برضه؟')) return;
+    try { await fetch('https://programming-science.onrender.com/api/auth/logout', { method: 'POST', headers: { Authorization: 'Bearer ' + tok } }); } catch { /* تجاهل */ }
+    const del = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (/^(ps_progress_v1|kudosk_cyber_progress|zakera_.*|ps_sync_mtimes|ps_token|ps_user)$/.test(k)) del.push(k);
+    }
+    del.forEach((k) => localStorage.removeItem(k));
+    sessionStorage.removeItem('ps_synced_once');
+    location.href = 'index.html';
+  }
 
   // زرار الأدمن: بيظهر بس لو السيرفر قال إن المستخدم أدمن
   const API_BASE = 'https://programming-science.onrender.com';

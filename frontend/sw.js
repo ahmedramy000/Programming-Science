@@ -1,9 +1,10 @@
-const CACHE_NAME = 'elom-elbarmaga-v37';
+const CACHE_NAME = 'elom-elbarmaga-v38';
 // ملفات v86 الكبيرة (المحرك والـBIOS) اختيارية - لو المستخدم لسه مضافهاش في
 // assets/v86/، مش هنوقف تسطيب السيرفر وركر كله عشانها (كاشينج منفصل تحت)
 const OPTIONAL_ASSETS = [
   '/assets/v86/libv86.js',
   '/assets/v86/v86.wasm',
+  '/assets/v86/libv86.js',
   '/assets/v86/seabios.bin',
   '/assets/v86/vgabios.bin',
 ];

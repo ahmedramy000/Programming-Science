@@ -149,6 +149,24 @@ const goBtn = document.getElementById('goBtn');
 const toggleMode = document.getElementById('toggleMode');
 const formErr = document.getElementById('formErr');
 
+// لو أنت مسجّل دخول من قبل، متطلبش منك تسجل تاني: بنتأكد من الجلسة وندخلك على طول
+(async function autoLogin() {
+  const tok = localStorage.getItem('ps_token');
+  if (!tok || new URLSearchParams(location.search).has('stay')) return;
+  formErr.textContent = '⏳ بنتأكد من حسابك...';
+  try {
+    const r = await fetch(API_BASE + '/api/auth/me', {
+      headers: { Authorization: 'Bearer ' + tok }, signal: AbortSignal.timeout(7000),
+    });
+    if (r.status === 401) { // السيرفر مش عارف الجلسة دي (اتلغت فعلًا)
+      localStorage.removeItem('ps_token'); localStorage.removeItem('ps_user');
+      formErr.textContent = 'الجلسة انتهت، سجّل دخول تاني.';
+      return;
+    }
+  } catch { /* السيرفر نايم أو مفيش نت: فضّل مسجّل وادخل */ }
+  location.replace('home.html');
+})();
+
 toggleMode.addEventListener('click', (e) => {
   e.preventDefault();
   signupMode = !signupMode;
@@ -169,17 +187,19 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   const body = signupMode
     ? { full_name: document.getElementById('fullName').value.trim(), email, password: pass, age: document.getElementById('age').value }
     : { email, password: pass };
+  formErr.textContent = '⏳ جاري الاتصال... لو السيرفر كان نايم ممكن ياخد لحد دقيقة';
   try {
     const r = await fetch(API_BASE + path, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      signal: AbortSignal.timeout(75000),
     });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'حصل خطأ');
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || (r.status >= 500 ? 'السيرفر بيصحى أو مشغول، جرّب تاني بعد ثواني.' : 'حصل خطأ (' + r.status + ')'));
     localStorage.setItem('ps_token', data.token);
     localStorage.setItem('ps_user', JSON.stringify(data.user));
     window.location.href = 'home.html';
   } catch (err) {
-    formErr.textContent = err.message === 'Failed to fetch'
+    formErr.textContent = (err.message === 'Failed to fetch' || err.name === 'TimeoutError' || err.name === 'AbortError')
       ? 'مش قادر أوصل للسيرفر دلوقتي — جرّب "الدخول كزائر" تحت'
       : err.message;
   } finally {

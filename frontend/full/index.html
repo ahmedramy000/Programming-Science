@@ -31,7 +31,53 @@
     <div class="sub-card">
       <h4>⚡ تشغيل مباشر جوه المتصفح (بدون تثبيت)</h4>
       <p>عندك ملف Kali ISO؟ شغّله فورًا جوه المتصفح نفسه — مفيش أي تثبيت على الجهاز ولا إنترنت بعد أول مرة.</p>
-      <div id="v86Container"></div>
+      <div class="v86-guide" id="v86Guide">
+    <div class="v86-guide-head">📖 دليل سريع قبل ما تبدأ</div>
+    <div class="v86-guide-steps">
+      <div class="v86-guide-step">
+        <span class="v86-step-num">1</span>
+        <div>
+          <strong>حمّل ملف ISO</strong>
+          <span>اختار Live ISO (بيشتغل فوراً) أو Installer ISO (بيثبّت على قرص افتراضي معزول).</span>
+          <a href="https://www.kali.org/get-kali/#kali-live" target="_blank" rel="noopener">تحميل Kali Live ↗</a>
+        </div>
+      </div>
+      <div class="v86-guide-step">
+        <span class="v86-step-num">2</span>
+        <div>
+          <strong>اضبط الإعدادات</strong>
+          <span>اختار الذاكرة (1GB كافية للـLive، 2GB للـInstaller)، نوع المعالج (64-bit في الغالب)، وحجم القرص الافتراضي.</span>
+        </div>
+      </div>
+      <div class="v86-guide-step">
+        <span class="v86-step-num">3</span>
+        <div>
+          <strong>اختار الملف وانتظر</strong>
+          <span>اضغط "اختار ملف ISO" وانتظر شريط التحميل. بعد "✅ جاهز" النظام بيشتغل في الشاشة أدناه.</span>
+        </div>
+      </div>
+      <div class="v86-guide-step">
+        <span class="v86-step-num">4</span>
+        <div>
+          <strong>للـInstaller: انتظر إعادة التشغيل التلقائية</strong>
+          <span>بعد انتهاء التثبيت، الموقع هيكمّل الإقلاع من القرص الافتراضي تلقائياً — ما محتاجش تعمل أي حاجة.</span>
+        </div>
+      </div>
+      <div class="v86-guide-step">
+        <span class="v86-step-num">5</span>
+        <div>
+          <strong>حفظ الحالة (اختياري)</strong>
+          <span>بعد ما النظام يشتغل، اضغط "💾 حفظ الحالة" عشان تقدر ترجعله في أي وقت بدون ما تعمل boot من الأول.</span>
+        </div>
+      </div>
+      <div class="v86-guide-note">
+        🔒 القرص الافتراضي معزول تماماً في ذاكرة المتصفح — مش بيأثر على أي ملفات حقيقية على جهازك.
+      </div>
+    </div>
+    <button class="v86-guide-close" id="v86GuideClose">فاهمت، ابدأ ⟵</button>
+  </div>
+
+  <div id="v86Container"></div>
     </div>
 
     <div class="sub-card">
@@ -72,7 +118,15 @@
   </section>
 </main>
 
-<script src="../assets/v86/libv86.js"></script>
+<script src="../assets/v86/libv86.js">
+  document.getElementById('v86GuideClose').addEventListener('click',()=>{
+    document.getElementById('v86Guide').classList.add('hidden');
+    localStorage.setItem('v86GuideSeen','1');
+  });
+  if(localStorage.getItem('v86GuideSeen')==='1'){
+    document.getElementById('v86Guide').classList.add('hidden');
+  }
+</script>
 <script src="../assets/js/v86-boot.js"></script>
 <script src="../assets/js/progress.js"></script>
 <script>

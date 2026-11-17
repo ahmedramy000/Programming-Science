@@ -46,6 +46,10 @@ async function checkV86Capability() {
   if (s.deviceMemoryGB !== null && s.deviceMemoryGB < V86_MIN_RAM_GB) {
     result.reasons.push(`رامات الجهاز (${s.deviceMemoryGB}GB) أقل من ${V86_MIN_RAM_GB}GB الموصى بيها.`);
   }
+  // على الموبايل: نحذّر إن الـISO الكبير ممكن يسبب مشاكل
+  if (s.mobile) {
+    result.warnings.push('الموبايل ممكن يتعب مع ISOs أكبر من 1GB — الأفضل تجرب على كمبيوتر أو تابلت.');
+  }
 
   // معلومات مش بتمنع التشغيل: المتصفح مش بيوضح القيم دي في كل الحالات
   if (s.cpuCores === null) result.warnings.push('المتصفح مش بيوضح عدد أنوية المعالج، هنكمل بدون الفحص ده.');
@@ -59,69 +63,227 @@ async function checkV86Capability() {
 }
 
 // بيبني واجهة اختيار ISO + تشغيل v86 جوه أي container، وبيرجع الـemulator instance
-function mountV86Boot(container, { v86BasePath = '../assets/v86/', defaultRam = 512 } = {}) {
-  let selectedRam = defaultRam;
 
+// ============================================================
+// mountV86Boot: يدعم Live ISO والـInstaller
+// الـInstaller flow:
+//   1) يشتغل من cdrom (boot_order=291)
+//   2) لما يخلص التثبيت ويعمل reboot → بنمسك emulator-stopped
+//   3) بنعمل eject_cdrom وrestart — النسخة الجديدة من v86 بتدعم reboot من hda تلقائياً
+//      لو ما اشتغلش، بنعمل save_state للـhda وnew V86 بـboot_order=786
+// ============================================================
+function mountV86Boot(container, { v86BasePath = '../assets/v86/', defaultRam = 512 } = {}) {
   container.innerHTML = `
     <div class="v86-boot">
-      <div class="v86-ram-row">
-        <button class="v86-ram-opt active" data-ram="512">512MB</button>
-        <button class="v86-ram-opt" data-ram="1024">1GB</button>
-        <button class="v86-ram-opt" data-ram="2048">2GB</button>
+      <div class="v86-controls">
+        <div class="v86-ram-row">
+          <span>الذاكرة:</span>
+          <label><input type="radio" name="v86Ram" value="512"> 512MB</label>
+          <label><input type="radio" name="v86Ram" value="1024" checked> 1GB</label>
+          <label><input type="radio" name="v86Ram" value="2048"> 2GB</label>
+        </div>
+        <div class="v86-iso-hint">
+          ⚠️ <strong>Live ISO</strong>: بيشتغل فوراً (kali-*-live-*.iso).
+          <strong>Installer ISO</strong>: بيثبّت ويعمل reboot — الموقع هيكمّل من الـHDD تلقائياً.
+          <br>للـ64-bit:
+          <a href="https://www.kali.org/get-kali/#kali-live" target="_blank" rel="noopener" style="color:var(--accent)">kali.org ← Live</a>
+          &nbsp;|&nbsp; للـ32-bit:
+          <a href="https://cdimage.kali.org/kali-images/kali-last-snapshot/" target="_blank" rel="noopener" style="color:var(--accent)">cdimage.kali.org ← live-i386</a>
+        </div>
+        <div class="v86-arch-row">
+          <span class="v86-arch-label">نوع المعالج:</span>
+          <label class="v86-arch-opt"><input type="radio" name="v86Arch" value="64" checked> 64-bit</label>
+          <label class="v86-arch-opt"><input type="radio" name="v86Arch" value="32"> 32-bit (i386)</label>
+        </div>
+        <div class="v86-ram-row">
+          <span>حجم القرص الافتراضي:</span>
+          <label><input type="radio" name="v86Hdd" value="8" checked> 8GB</label>
+          <label><input type="radio" name="v86Hdd" value="20"> 20GB</label>
+          <label><input type="radio" name="v86Hdd" value="40"> 40GB</label>
+        </div>
+        <div class="v86-disk-note">
+          🔒 القرص الافتراضي معزول تماماً في الذاكرة — مش بيلمس ولا بيأثر على أي ملفات حقيقية على جهازك.
+          بيتمسح لما تقفل الصفحة (عادي للتدريب). لو عايز تحفظ نظامك، استخدم زرار "حفظ الحالة" بعد التشغيل.
+        </div>
+        <label class="v86-pick-btn" for="v86IsoPicker">📂 اختار ملف ISO من جهازك</label>
+        <input type="file" id="v86IsoPicker" accept=".iso" style="display:none;">
+        <div class="v86-file-chosen" id="v86FileChosen"></div>
       </div>
-      <label class="v86-pick-btn" for="v86IsoPicker">📂 اختار ملف Kali ISO من جهازك</label>
-      <input type="file" id="v86IsoPicker" accept=".iso" style="display:none;">
-      <div class="v86-file-chosen" id="v86FileChosen"></div>
-      <div class="v86-status" id="v86Status"></div>
-      <div class="v86-screen" id="v86Screen" style="display:none;"></div>
+      <div class="v86-screen-wrap" id="v86ScreenWrap" style="display:none;">
+        <div class="v86-status" id="v86Status"></div>
+        <div id="v86Screen" style="width:100%;"></div>
+        <div class="v86-action-row" id="v86ActionRow" style="display:none;">
+          <button class="v86-action-btn" id="v86FullscreenBtn">⛶ ملء الشاشة</button>
+          <button class="v86-action-btn" id="v86SaveBtn">💾 حفظ الحالة</button>
+          <button class="v86-action-btn" id="v86LoadBtn" style="display:none;">📂 استعادة الحالة</button>
+          <button class="v86-action-btn" id="v86ResetBtn">🔄 إعادة تشغيل</button>
+          <button class="v86-action-btn danger" id="v86StopBtn">⏹ وقف</button>
+        </div>
+      </div>
     </div>
   `;
 
-  container.querySelectorAll('.v86-ram-opt').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      container.querySelectorAll('.v86-ram-opt').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      selectedRam = parseInt(btn.dataset.ram, 10);
-    });
-  });
+  const fileChosen   = container.querySelector('#v86FileChosen');
+  const statusEl     = container.querySelector('#v86Status');
+  const screenWrap   = container.querySelector('#v86ScreenWrap');
+  const screenDiv    = container.querySelector('#v86Screen');
+  const actionRow    = container.querySelector('#v86ActionRow');
 
-  const picker = container.querySelector('#v86IsoPicker');
-  const fileChosen = container.querySelector('#v86FileChosen');
-  const status = container.querySelector('#v86Status');
-  const screen = container.querySelector('#v86Screen');
-
-  picker.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    fileChosen.textContent = `📄 ${file.name} (${(file.size / 1024 / 1024 / 1024).toFixed(2)} GB)`;
-
-    if (navigator.storage && navigator.storage.persist) {
-      await navigator.storage.persist();
+  function getStatus(text, cls='') {
+    statusEl.innerHTML = '';
+    if (cls === 'progress') {
+      const wrap = document.createElement('div'); wrap.className = 'v86-progress-wrap';
+      const bar  = document.createElement('div'); bar.className  = 'v86-progress-bar'; bar.id = 'v86ProgBar';
+      wrap.appendChild(bar); statusEl.appendChild(wrap);
     }
+    const lbl = document.createElement('div'); lbl.className = 'v86-progress-lbl'; lbl.textContent = text;
+    statusEl.appendChild(lbl);
+    return { bar: container.querySelector('#v86ProgBar'), lbl };
+  }
+
+  let emulator = null;
+  let bootedFromHda = false;
+  let hdaSaved = null;  // ArrayBuffer: حالة الـHDD بعد التثبيت
+
+  function getRam() {
+    const r = container.querySelector('input[name="v86Ram"]:checked');
+    return parseInt(r ? r.value : '1024', 10);
+  }
+
+  function buildOptions(file, ram, fromHda, savedState) {
+    const isInstaller = /installer/i.test(file ? file.name : '');
+    const opts = {
+      wasm_path:        v86BasePath + 'v86.wasm',
+      screen_container: screenDiv,
+      bios:    { url: v86BasePath + 'seabios.bin' },
+      vga_bios:{ url: v86BasePath + 'vgabios.bin' },
+      memory_size:     ram * 1024 * 1024,
+      vga_memory_size: 16 * 1024 * 1024,
+      acpi: true,
+      autostart: true,
+    };
+    if (fromHda && savedState) {
+      // بعد التثبيت: نشغّل من الـHDD مباشرة بالحالة المحفوظة
+      opts.hda            = { buffer: savedState };
+      opts.boot_order     = 786; // HDD أول
+      opts.initial_state  = { buffer: savedState };
+    } else {
+      // أول تشغيل: من الـcdrom
+      opts.cdrom      = { buffer: file };
+      opts.boot_order = 291; // cdrom أول
+      // HDD افتراضي: 20GB للـinstaller أو 8GB للـlive
+      const hddR = container.querySelector('input[name="v86Hdd"]:checked');
+      const hddGB = parseInt(hddR ? hddR.value : '20', 10);
+      opts.hda = { size: hddGB * 1024 * 1024 * 1024 };
+    }
+    return opts;
+  }
+
+  async function launchVM(file, ram, fromHda, savedState) {
+    // نضيف hidden input لـv86 عشان يعمل screen container صح
+    screenDiv.innerHTML = '';
+    if (emulator) { try { emulator.stop(); emulator.destroy(); } catch(e){} emulator = null; }
+
+    const { lbl, bar } = getStatus('⏳ جاري تهيئة المحرك...', 'progress');
+    screenWrap.style.display = 'flex';
+    actionRow.style.display = 'none';
+
     if (typeof V86 === 'undefined') {
-      status.textContent = '⚠️ محرك v86 مش متاح. راجع assets/v86/README.txt.';
+      lbl.textContent = '⚠️ محرك v86 غير موجود. راجع assets/v86/README.txt.';
       return;
     }
 
-    status.textContent = 'بيشغّل...';
-    screen.style.display = 'flex';
+    let bootTimeout = setTimeout(() => {
+      lbl.textContent = '⚠️ المحرك مش بيستجيب. ممكن الملف مش صالح أو الذاكرة أقل من اللازم.';
+    }, 120000);
 
-    const emulator = new V86({
-      screen_container: screen,
-      bios: { url: v86BasePath + 'seabios.bin' },
-      vga_bios: { url: v86BasePath + 'vgabios.bin' },
-      cdrom: { url: URL.createObjectURL(file) },
-      hda: { size: 20 * 1024 * 1024 * 1024, async: true },
-      memory_size: selectedRam * 1024 * 1024,
-      vga_memory_size: 8 * 1024 * 1024,
-      autostart: true,
+    try {
+      emulator = new V86(buildOptions(file, ram, fromHda, savedState));
+    } catch(e) {
+      clearTimeout(bootTimeout);
+      lbl.textContent = '❌ فشل التشغيل: ' + e.message;
+      return;
+    }
+
+    emulator.add_listener('download-progress', (e) => {
+      if (!e.total) return;
+      const pct = Math.round((e.loaded / e.total) * 100);
+      if (bar) bar.style.width = pct + '%';
+      lbl.textContent = `⬇️ جاري تحميل... ${pct}%`;
     });
 
-    localStorage.setItem('kaliFile', file.name);
-    if (window.PSProgress && window.PSProgress.markKaliBooted) window.PSProgress.markKaliBooted();
+    emulator.add_listener('emulator-ready', () => {
+      clearTimeout(bootTimeout);
+      if (bar && bar.parentElement) bar.parentElement.style.display = 'none';
+      lbl.textContent = fromHda
+        ? '✅ النظام المثبّت شغال — ابدأ الكتابة'
+        : '✅ جاهز — النظام بيشتغل الآن';
+      actionRow.style.display = 'flex';
+      localStorage.setItem('kaliFile', file ? file.name : 'hda-boot');
+      if (window.PSProgress && window.PSProgress.markKaliBooted) window.PSProgress.markKaliBooted();
+    });
 
-    emulator.add_listener('emulator-ready', () => { status.textContent = '✅ شغال'; });
-    return emulator;
+    // الحدث الأهم: لما الـInstaller يخلص ويعمل reboot
+    emulator.add_listener('emulator-stopped', async () => {
+      if (bootedFromHda) return; // ما نكررش
+      bootedFromHda = true;
+      clearTimeout(bootTimeout);
+      lbl.textContent = '💾 اكتمل التثبيت — جاري التحضير للإقلاع من القرص...';
+      actionRow.style.display = 'none';
+      try {
+        hdaSaved = await emulator.save_state();
+        await launchVM(file, ram, true, hdaSaved);
+      } catch(e) {
+        // لو save_state فشل، نجرب eject cdrom وrestart عادي
+        lbl.textContent = '🔄 جاري الإقلاع من القرص...';
+        try { emulator.eject_cdrom(); } catch(e2){}
+        emulator.restart();
+        bootedFromHda = false; // نديه فرصة تانية
+      }
+    });
+  }
+
+  // --- file picker ---
+  container.querySelector('#v86IsoPicker').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    fileChosen.style.color = '';
+    fileChosen.textContent = `📀 ${file.name} (${(file.size / 1024 / 1024 / 1024).toFixed(2)} GB)`;
+    const ram = getRam();
+    bootedFromHda = false;
+    hdaSaved = null;
+    launchVM(file, ram, false, null);
+  });
+
+  // --- أزرار التحكم ---
+  container.querySelector('#v86FullscreenBtn').addEventListener('click', () => {
+    if (emulator) emulator.screen_go_fullscreen();
+  });
+
+  // حفظ الحالة: بيخزن snapshot للنظام كله في الذاكرة (مش على ملف — ده تقني متاح)
+  container.querySelector('#v86SaveBtn').addEventListener('click', async () => {
+    if (!emulator) return;
+    const btn = container.querySelector('#v86SaveBtn');
+    btn.textContent = '⏳ جاري الحفظ...'; btn.disabled = true;
+    try {
+      hdaSaved = await emulator.save_state();
+      btn.textContent = '✅ اتحفظ'; btn.disabled = false;
+      container.querySelector('#v86LoadBtn').style.display = 'inline-block';
+    } catch(e) {
+      btn.textContent = '❌ فشل الحفظ'; btn.disabled = false;
+    }
+  });
+
+  // استعادة الحالة المحفوظة
+  container.querySelector('#v86LoadBtn').addEventListener('click', async () => {
+    if (!emulator || !hdaSaved) return;
+    try { await emulator.restore_state(hdaSaved); } catch(e) {}
+  });
+  container.querySelector('#v86ResetBtn').addEventListener('click', () => {
+    if (emulator) { bootedFromHda = false; hdaSaved = null; emulator.restart(); }
+  });
+  container.querySelector('#v86StopBtn').addEventListener('click', () => {
+    if (emulator) { emulator.stop(); actionRow.style.display = 'none'; }
   });
 }
 

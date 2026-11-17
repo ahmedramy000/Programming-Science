@@ -82,14 +82,15 @@
 
   async function pushNow() {
     const token = getToken();
-    if (!token) return;
+    if (!token) return true;
     try {
-      await fetch(API + '/api/progress', {
+      const r = await fetch(API + '/api/progress', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
         body: JSON.stringify({ items: buildItems() }),
       });
-    } catch { /* مفيش نت: البيانات محلية، هتتبعت المرة الجاية */ }
+      return r.ok;
+    } catch { return false; /* مفيش نت: البيانات محلية، هتتبعت المرة الجاية */ }
   }
   function schedulePush() {
     if (applying) return;

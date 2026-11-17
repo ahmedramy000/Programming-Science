@@ -12,3 +12,31 @@
 .v86-capability-card.no{border-color:#ff5a5a55;}
 .v86-capability-card h4{margin:0 0 8px; font-size:13.5px;}
 .v86-capability-card ul{margin:6px 0 0; padding-inline-start:18px; font-size:12px; color:#8a8f9c; line-height:1.8;}
+
+/* Progress bar v86 */
+.v86-progress-wrap{width:100%;height:6px;background:#1c1f2e;border-radius:3px;overflow:hidden;margin-bottom:6px;}
+.v86-progress-bar{height:100%;width:0%;background:var(--accent,#7c5cff);border-radius:3px;transition:width .3s;}
+.v86-progress-lbl{font-size:12px;color:var(--muted,#8a8f9c);margin-top:4px;}
+/* شاشة v86 تاخد عرض كامل الكونتينر على أي شاشة */
+.v86-screen{width:100%!important;}
+.v86-screen canvas{width:100%!important;height:auto!important;display:block;}
+
+/* نوع ISO hint */
+.v86-iso-hint{font-size:12px; line-height:1.7; color:var(--muted); background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.3); border-radius:10px; padding:10px 14px; margin-bottom:10px;}
+.v86-iso-hint strong{color:#f59e0b;}
+/* اختيار الـarch */
+.v86-arch-row{display:flex; align-items:center; gap:14px; margin-bottom:10px; font-size:13px; flex-wrap:wrap;}
+.v86-arch-label{color:var(--muted); flex:none;}
+.v86-arch-opt{display:flex; align-items:center; gap:5px; cursor:pointer; color:var(--text);}
+.v86-arch-opt input{accent-color:var(--accent); cursor:pointer;}
+
+/* أزرار التحكم */
+.v86-action-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;}
+.v86-action-btn{padding:7px 16px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text); cursor:pointer; font-size:13px; font-family:inherit;}
+.v86-action-btn:hover{background:var(--accent); color:#fff; border-color:var(--accent);}
+.v86-action-btn.danger{border-color:#ef4444; color:#ef4444;}
+.v86-action-btn.danger:hover{background:#ef4444; color:#fff;}
+/* screen wrap */
+.v86-screen-wrap{display:flex; flex-direction:column; gap:6px; width:100%;}
+/* شاشة v86 عرض كامل */
+.v86-screen-wrap #v86Screen canvas{width:100%!important; height:auto!important; display:block; border-radius:8px;}

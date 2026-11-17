@@ -9,8 +9,19 @@
 <meta name="theme-color" content="#0b0c0f">
 <link rel="stylesheet" href="../assets/css/index.css">
 <style>
-  .wrap{max-width:min(100%,1280px); margin:0 auto; padding:20px 18px 50px;}
-  header{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
+  .wrap{max-width:min(100%,1440px); margin:0 auto; padding:16px 14px 50px;}
+  header{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+  /* على التابلت والكمبيوتر: grid بـ sidebar للغات على الشمال والمحرر والنتيجة على اليمين */
+  @media (min-width:720px){
+    .editor-layout{display:grid; grid-template-columns:160px 1fr; gap:14px; align-items:start;}
+    .lang-col{display:flex; flex-direction:column; gap:6px; position:sticky; top:60px;}
+    .lang-col .lang-chip{border-radius:10px; justify-content:space-between; display:flex; align-items:center; padding:8px 12px;}
+    .lang-row{display:none;}
+    .server-status{font-size:11px;}
+  }
+  @media (max-width:719px){
+    .lang-col{display:none;}
+  }
   header a{color:var(--muted); text-decoration:none; font-size:12px;}
   header h1{font-size:17px; margin:0;}
 
@@ -53,6 +64,9 @@
 
   <div class="server-status" id="serverStatus"></div>
   <div class="lang-row" id="langRow"></div>
+  <div class="editor-layout">
+  <div class="lang-col" id="langCol"></div>
+  <div class="editor-main">
 
   <div class="editor-box">
     <textarea id="codeInput" spellcheck="false"></textarea>
@@ -96,14 +110,18 @@ const resultBox = document.getElementById('resultBox');
 const runBtn = document.getElementById('runBtn');
 const serverStatus = document.getElementById('serverStatus');
 
+const langCol = document.getElementById('langCol');
 function renderChips() {
-  langRow.innerHTML = '';
-  LANGUAGES.forEach((lang) => {
-    const chip = document.createElement('button');
-    chip.className = 'lang-chip' + (lang.id === current.id ? ' active' : '');
-    chip.innerHTML = `${lang.name}<span class="dot ${state[lang.id]}"></span>`;
-    chip.addEventListener('click', () => { current = lang; codeInput.value = lang.starter; renderChips(); resultBox.innerHTML = ''; });
-    langRow.appendChild(chip);
+  [langRow, langCol].forEach((row) => {
+    if (!row) return;
+    row.innerHTML = '';
+    LANGUAGES.forEach((lang) => {
+      const chip = document.createElement('button');
+      chip.className = 'lang-chip' + (lang.id === current.id ? ' active' : '');
+      chip.innerHTML = `${lang.name}<span class="dot ${state[lang.id]}"></span>`;
+      chip.addEventListener('click', () => { current = lang; codeInput.value = lang.starter; renderChips(); resultBox.innerHTML = ''; });
+      row.appendChild(chip);
+    });
   });
 }
 renderChips();
