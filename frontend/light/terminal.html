@@ -3,66 +3,162 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>علوم البرمجة — محاكاة تيرمينال لينكس</title>
-<meta name="theme-color" content="#0b0c0f">
+<title>علوم البرمجة — ترمينال Linux</title>
 <link rel="stylesheet" href="../assets/css/light-terminal.css">
-<link rel="stylesheet" href="../assets/css/v86-boot.css">
+<style>
+  /* xterm.js styles inline */
+  .xterm { font-feature-settings: "liga" 0; position: relative; user-select: none; -ms-user-select: none; -webkit-user-select: none; }
+  .xterm.focus, .xterm:focus { outline: none; }
+  .xterm .xterm-helpers { position: absolute; top: 0; z-index: 5; }
+  .xterm .xterm-helper-textarea { position: absolute; padding: 0; border: 0; margin: 0; overflow: hidden; resize: none; height: 0; width: 0; opacity: 0; left: -9999em; top: 0; white-space: nowrap; overflow: hidden; color: transparent; }
+
+  :root { --bg:#0e1117; --panel:#1a1d2e; --border:#2a2d3e; --accent:#7c5cff; --muted:#8a8f9c; --text:#e2e8f0; }
+  *,*::before,*::after{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--text); font-family:'Cairo',system-ui,sans-serif; min-height:100dvh; display:flex; flex-direction:column;}
+  header{display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--border); background:var(--panel);}
+  header a{color:var(--muted); text-decoration:none; font-size:13px;}
+  header .title{font-size:15px; font-weight:bold;}
+  .term-wrap{flex:1; display:flex; flex-direction:column; padding:12px 14px; gap:12px;}
+  .term-info{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:14px 16px; font-size:13px; line-height:1.7;}
+  .term-info strong{color:var(--accent);}
+  .term-info .warn{color:#f59e0b; font-size:12px; margin-top:6px;}
+  .term-box{background:#0d1117; border:1px solid var(--border); border-radius:12px; overflow:hidden; flex:1; min-height:380px; display:flex; flex-direction:column;}
+  .term-toolbar{display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--border); background:#161b22;}
+  .term-dot{width:12px; height:12px; border-radius:50%;}
+  .term-dot.red{background:#ef4444;} .term-dot.yellow{background:#f59e0b;} .term-dot.green{background:#22c55e;}
+  .term-label{font-size:11px; color:var(--muted); margin-right:auto; direction:ltr;}
+  .term-status{font-size:11px; padding:3px 10px; border-radius:20px; background:rgba(124,92,255,.15); color:var(--accent);}
+  #termContainer{flex:1; padding:8px; overflow:hidden; direction:ltr; text-align:left;}
+  /* fallback textarea terminal لو xterm ما اشتغلش */
+  #termFallback{display:none; flex:1; flex-direction:column;}
+  #termOutput{flex:1; padding:10px; font-family:'Fira Code','Courier New',monospace; font-size:13px; color:#22c55e; background:#0d1117; overflow-y:auto; white-space:pre-wrap; direction:ltr; text-align:left; min-height:280px;}
+  #termInputRow{display:flex; border-top:1px solid var(--border);}
+  #termPromptLabel{padding:8px 10px; font-family:monospace; font-size:13px; color:#22c55e; background:#0d1117; white-space:nowrap; direction:ltr;}
+  #termInput{flex:1; border:none; background:#0d1117; color:#22c55e; font-family:'Fira Code','Courier New',monospace; font-size:13px; padding:8px 4px; outline:none; direction:ltr; enterkeyhint:send;}
+  .connect-btn{margin:0 auto; padding:12px 32px; background:var(--accent); color:#fff; border:none; border-radius:10px; cursor:pointer; font-size:14px; font-family:inherit; display:block;}
+  .connect-btn:hover{opacity:.9;}
+  .session-warn{font-size:11px; color:var(--muted); text-align:center; padding:6px;}
+  .kbd{background:var(--panel); border:1px solid var(--border); border-radius:4px; padding:1px 6px; font-family:monospace; font-size:11px;}
+</style>
 </head>
 <body>
-
 <header>
-  <a href="index.html">⟵ رجوع للوضع الخفيف</a>
-  <div>🖥️ تيرمينال لينكس</div>
+  <a href="../home.html">← الرئيسية</a>
+  <div class="title">🐧 ترمينال Linux</div>
+  <span class="term-status" id="connStatus">غير متصل</span>
 </header>
 
-<div id="v86CapabilityCard" class="v86-capability-card">جاري فحص إمكانيات جهازك...</div>
-<div id="v86Container" style="display:none; margin:0 14px 14px;"></div>
+<div class="term-wrap">
+  <div class="term-info">
+    <strong>ترمينال Linux حقيقي</strong> — بيئة Ubuntu معزولة على السيرفر. بيتمسح تلقائياً بعد 20 دقيقة.
+    <br>جرّب: <span class="kbd">ls</span> <span class="kbd">python3 --version</span> <span class="kbd">echo "Hello"</span> <span class="kbd">cat welcome.txt</span>
+    <div class="warn">⚠️ مش محمّل محلياً — محتاج اتصال بالسيرفر. لو السيرفر نايم ممكن ياخد دقيقة.</div>
+  </div>
 
-<div class="term-screen" id="termScreen">
-  <div class="term-lines" id="termLines"></div>
-  <form class="term-input-row" id="termForm" action="javascript:void(0)" autocomplete="off">
-    <span class="prompt" id="promptLabel">kudosk@kali:~$</span>
-    <input type="text" id="termInput" enterkeyhint="send" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-  </form>
+  <button class="connect-btn" id="connectBtn" onclick="startSession()">🚀 ابدأ جلسة Linux</button>
+  <div class="session-warn" id="sessionWarn" style="display:none;">⏰ الجلسة بتنتهي تلقائياً بعد 20 دقيقة</div>
+
+  <div class="term-box" id="termBox" style="display:none;">
+    <div class="term-toolbar">
+      <div class="term-dot red"></div>
+      <div class="term-dot yellow"></div>
+      <div class="term-dot green"></div>
+      <span class="term-label" id="termLabel">bash — ubuntu</span>
+    </div>
+    <div id="termContainer"></div>
+    <!-- fallback لو xterm ما اشتغلش -->
+    <div id="termFallback">
+      <div id="termOutput"></div>
+      <div id="termInputRow">
+        <span id="termPromptLabel">$ </span>
+        <form id="termForm" action="javascript:void(0)" style="flex:1; display:flex;">
+          <input id="termInput" type="text" enterkeyhint="send" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="اكتب أمر...">
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 
-<script src="../assets/v86/libv86.js"></script>
-<script src="../assets/js/v86-boot.js"></script>
-<script src="../assets/js/progress.js"></script>
-<script src="../assets/js/light-terminal.js"></script>
+<!-- xterm.js من CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/5.3.0/xterm.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/5.3.0/xterm.min.css">
 <script>
-  // فحص تلقائي: لو الجهاز بيتحمّل نظام حقيقي، نديله الخيار ده بدل التدريبي بس
-  (async () => {
-    const card = document.getElementById('v86CapabilityCard');
-    const v86Container = document.getElementById('v86Container');
-    const termScreen = document.getElementById('termScreen');
-    if (!window.V86Kudosk) { card.style.display = 'none'; return; }
+const API_BASE = 'https://programming-science.onrender.com';
+const WS_URL   = API_BASE.replace('https://','wss://').replace('http://','ws://') + '/terminal';
 
-    const cap = await window.V86Kudosk.checkV86Capability();
-    if (cap.capable) {
-      card.className = 'v86-capability-card ok';
-      card.innerHTML = `
-        <h4>✅ جهازك يقدر يشغّل نظام Kali حقيقي!</h4>
-        <p style="margin:0; font-size:12px; color:#8a8f9c;">لو عندك ملف ISO، تقدر تشغّله مباشرة هنا. غير كده، التيرمينال التدريبي تحت جاهز.</p>
-      `;
-      const toggleBtn = document.createElement('button');
-      toggleBtn.className = 'v86-pick-btn';
-      toggleBtn.style.marginTop = '10px';
-      toggleBtn.textContent = '⚡ شغّل نظام حقيقي';
-      toggleBtn.addEventListener('click', () => {
-        v86Container.style.display = 'block';
-        termScreen.style.display = 'none';
-        window.V86Kudosk.mountV86Boot(v86Container, { v86BasePath: '../assets/v86/', defaultRam: 512 });
-      });
-      card.appendChild(toggleBtn);
-    } else {
-      card.className = 'v86-capability-card no';
-      card.innerHTML = `
-        <h4>ℹ️ جهازك دلوقتي مناسب أكتر للنسخة التدريبية الخفيفة</h4>
-        <ul>${cap.reasons.map((r) => `<li>${r}</li>`).join('')}</ul>
-      `;
-    }
-  })();
+let ws = null, term = null, inputBuf = '';
+const connStatus = document.getElementById('connStatus');
+const termBox    = document.getElementById('termBox');
+const connectBtn = document.getElementById('connectBtn');
+const sessionWarn= document.getElementById('sessionWarn');
+let xtermLoaded  = typeof Terminal !== 'undefined';
+
+function setStatus(text, color) {
+  connStatus.textContent = text;
+  connStatus.style.background = color ? `${color}26` : '';
+  connStatus.style.color = color || '';
+}
+
+function appendFallback(text) {
+  const out = document.getElementById('termOutput');
+  out.textContent += text;
+  out.scrollTop = out.scrollHeight;
+}
+
+function startSession() {
+  connectBtn.style.display = 'none';
+  sessionWarn.style.display = 'block';
+  termBox.style.display     = 'flex';
+  termBox.style.flexDirection = 'column';
+  setStatus('⏳ جاري الاتصال...', '#f59e0b');
+
+  // جرّب xterm.js أول — لو ما اتحمّلش استخدم fallback
+  xtermLoaded = typeof Terminal !== 'undefined';
+  if (xtermLoaded) {
+    term = new Terminal({
+      cursorBlink: true, fontSize: 14, fontFamily: "'Fira Code','Courier New',monospace",
+      theme: { background:'#0d1117', foreground:'#e2e8f0', cursor:'#7c5cff', selectionBackground:'rgba(124,92,255,.3)' },
+      convertEol: true, scrollback: 1000, disableStdin: false,
+    });
+    term.open(document.getElementById('termContainer'));
+    term.onData((data) => { if (ws && ws.readyState===1) ws.send(JSON.stringify({type:'input',data})); });
+  } else {
+    document.getElementById('termContainer').style.display = 'none';
+    document.getElementById('termFallback').style.display  = 'flex';
+    document.getElementById('termForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const inp = document.getElementById('termInput');
+      const cmd = inp.value;
+      inp.value = '';
+      inp.focus({preventScroll:true});
+      if (ws && ws.readyState===1) ws.send(JSON.stringify({type:'input', data: cmd+'\n'}));
+    });
+  }
+
+  ws = new WebSocket(WS_URL);
+  ws.binaryType = 'arraybuffer';
+
+  ws.onopen = () => setStatus('✅ متصل', '#22c55e');
+
+  ws.onmessage = (e) => {
+    let text = typeof e.data === 'string' ? e.data
+             : new TextDecoder().decode(new Uint8Array(e.data));
+    if (xtermLoaded && term) term.write(text);
+    else appendFallback(text);
+  };
+
+  ws.onclose = () => {
+    setStatus('🔴 انقطع الاتصال', '#ef4444');
+    connectBtn.textContent = '🔄 اتصال جديد';
+    connectBtn.style.display = 'block';
+    sessionWarn.style.display = 'none';
+  };
+
+  ws.onerror = () => setStatus('❌ خطأ في الاتصال', '#ef4444');
+}
+
+// resize xterm لو اتغير حجم الصفحة
+window.addEventListener('resize', () => { if (term) try { term.resize(term.cols, term.rows); } catch{} });
 </script>
 </body>
 </html>

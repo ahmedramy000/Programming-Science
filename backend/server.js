@@ -12,6 +12,7 @@ const fs = require('fs/promises');
 const os = require('os');
 const crypto = require('crypto');
 const store = require('./store');
+const { attachWss } = require('./terminal');
 
 const app = express();
 app.set('trust proxy', 1); // Render/Vercel: IP المستخدم الحقيقي بدل IP البروكسي
@@ -67,6 +68,7 @@ app.post('/api/auth/signup', async (req, res) => {
     await store.createSession(token, user.id);
     res.json({ token, user: publicUser(user) });
   } catch (e) {
+    console.error('[signup]', e.message);
     res.status(500).json({ error: 'حصل خطأ في التسجيل، جرّب تاني' });
   }
 });
@@ -85,6 +87,7 @@ app.post('/api/auth/login', async (req, res) => {
     await store.createSession(token, user.id);
     res.json({ token, user: publicUser(user) });
   } catch (e) {
+    console.error('[login]', e.message);
     res.status(500).json({ error: 'حصل خطأ في الدخول، جرّب تاني' });
   }
 });
@@ -96,6 +99,7 @@ async function requireAuth(req, res, next) {
     req.userId = userId;
     next();
   } catch (e) {
+    console.error('[session]', e.message);
     res.status(500).json({ error: 'خطأ في التحقق من الجلسة' });
   }
 }
@@ -201,8 +205,14 @@ const ageLevels = {
 };
 
 // ---------- Routes ----------
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', service: 'programming-science-backend' });
+app.get('/api/health', async (req, res) => {
+  // storage: postgres يعني الحسابات محفوظة في قاعدة البيانات، files يعني بتتمسح مع كل تشغيل على Render
+  const out = { status: 'ok', service: 'programming-science-backend', storage: store.useDb ? 'postgres' : 'files' };
+  if (store.useDb) {
+    try { await store.ping(); out.db = 'ok'; }
+    catch (e) { out.db = 'error'; out.status = 'degraded'; console.error('[health] db:', e.message); }
+  }
+  res.json(out);
 });
 
 app.get('/api/tracks', (req, res) => {
@@ -345,7 +355,9 @@ app.post('/run', async (req, res) => {
 store.init()
   .then(() => detectLanguages())
   .then(() => {
-    app.listen(PORT, () => {
+    const httpServer = require('http').createServer(app);
+    attachWss(httpServer);
+    httpServer.listen(PORT, () => {
       console.log(`🚀 السيرفر شغال على http://localhost:${PORT} — تخزين: ${store.useDb ? 'PostgreSQL' : 'ملفات محلية'}`);
     });
   })
