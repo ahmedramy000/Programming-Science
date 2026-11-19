@@ -111,85 +111,57 @@
 
 <script src="assets/js/icons-inject.js"></script>
 <script src="assets/js/progress.js"></script>
-<script>
-  const p = PSProgress.load();
-  const lvl = PSProgress.levelOf(p.xp);
-  document.getElementById('lvlBadge').textContent = lvl;
-  document.getElementById('xpFill').style.width = (PSProgress.xpIntoLevel(p.xp) / PSProgress.XP_PER_LEVEL * 100) + '%';
-  document.getElementById('xpLabel').textContent = `${PSProgress.xpIntoLevel(p.xp)} / ${PSProgress.XP_PER_LEVEL} XP — مستوى ${lvl}`;
-  document.getElementById('lessonsDoneNum').textContent = p.lessonsCompleted || 0;
-  document.getElementById('medalsNum').textContent = (p.medals || []).length;
+<script type="module">
+import { fbLogout, fbOnAuthChange, fbIsAdmin } from './assets/js/firebase-init.js';
 
-  const medalsRow = document.getElementById('medalsRow');
-  PSProgress.MEDALS.forEach((m) => {
-    const earned = (p.medals || []).includes(m.id);
-    const chip = document.createElement('div');
-    chip.className = 'medal-chip' + (earned ? '' : ' locked');
-    chip.textContent = `${m.icon} ${m.name}`;
-    medalsRow.appendChild(chip);
-  });
-
-  // حالة الحساب في الهيدر
-  (function renderAccountStatus() {
-    const el = document.getElementById('accountStatus');
-    const tok = localStorage.getItem('ps_token');
-    let user = null;
-    try { user = JSON.parse(localStorage.getItem('ps_user')); } catch { user = null; }
-    if (tok && user && user.full_name) {
-      el.textContent = 'مسجّل دخول كـ ' + user.full_name + ' · المزامنة شغالة ✅ · ';
-      const out = document.createElement('a');
-      out.href = '#'; out.textContent = 'تسجيل الخروج'; out.style.color = 'var(--accent)';
-      out.addEventListener('click', (ev) => { ev.preventDefault(); doLogout(); });
-      el.appendChild(out);
-    } else {
-      el.innerHTML = 'مش مسجّل دخول. <a href="index.html" style="color:var(--accent);">سجّل دخول</a> عشان تزامن تقدمك.';
+// حالة الحساب
+fbOnAuthChange((user) => {
+  const el = document.getElementById('accountStatus');
+  if (!el) return;
+  if (user) {
+    el.textContent = 'مسجّل دخول كـ ' + user.full_name + ' · المزامنة شغالة ✅ · ';
+    const out = document.createElement('a');
+    out.href='#'; out.textContent='تسجيل الخروج'; out.style.color='var(--accent)';
+    out.addEventListener('click', async (ev) => {
+      ev.preventDefault();
+      let synced=true;
+      try { if(window.PSAccountSync) synced=await window.PSAccountSync.pushNow(); } catch {}
+      if(!synced&&!confirm('مقدرتش أزامن آخر تقدّم. تخرج برضه؟')) return;
+      await fbLogout();
+      const del=[];
+      for(let i=0;i<localStorage.length;i++){
+        const k=localStorage.key(i);
+        if(/^(ps_progress_v1|kudosk_cyber_progress|zakera_.*|ps_sync_mtimes|ps_user)$/.test(k)) del.push(k);
+      }
+      del.forEach(k=>localStorage.removeItem(k));
+      sessionStorage.removeItem('ps_synced_once');
+      location.href='index.html';
+    });
+    el.appendChild(out);
+    // زرار الأدمن
+    if (fbIsAdmin(user)) {
+      document.getElementById('adminCard').style.display='block';
     }
-  })();
-
-  // تسجيل الخروج: بنزامن آخر تقدم الأول، وبعدين نمسح بيانات الحساب من المتصفح (محفوظة على السيرفر)
-  async function doLogout() {
-    const tok = localStorage.getItem('ps_token');
-    let synced = true;
-    try { if (window.PSAccountSync) synced = await window.PSAccountSync.pushNow(); } catch { synced = false; }
-    if (!synced && !confirm('مقدرتش أزامن آخر تقدّم ليك قبل الخروج، وممكن تخسر جزء منه. تخرج برضه؟')) return;
-    try { await fetch('https://programming-science.onrender.com/api/auth/logout', { method: 'POST', headers: { Authorization: 'Bearer ' + tok } }); } catch { /* تجاهل */ }
-    const del = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (/^(ps_progress_v1|kudosk_cyber_progress|zakera_.*|ps_sync_mtimes|ps_token|ps_user)$/.test(k)) del.push(k);
-    }
-    del.forEach((k) => localStorage.removeItem(k));
-    sessionStorage.removeItem('ps_synced_once');
-    location.href = 'index.html';
+  } else {
+    el.innerHTML='مش مسجّل دخول. <a href="index.html" style="color:var(--accent);">سجّل دخول</a>';
   }
+  localStorage.setItem('ps_user', user ? JSON.stringify(user) : '');
+});
 
-  // زرار الأدمن: بيظهر بس لو السيرفر قال إن المستخدم أدمن
-  const API_BASE = 'https://programming-science.onrender.com';
-  const token = localStorage.getItem('ps_token');
-  if (token) {
-    fetch(API_BASE + '/api/auth/me', { headers: { Authorization: 'Bearer ' + token } })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (!data || !data.isAdmin) return;
-        document.getElementById('adminCard').style.display = 'block';
-      })
-      .catch(() => {});
-  }
-
-  document.getElementById('redeployBtn').addEventListener('click', async () => {
-    const status = document.getElementById('redeployStatus');
-    status.textContent = 'جاري الإرسال...';
-    try {
-      const r = await fetch(API_BASE + '/api/admin/redeploy', {
-        method: 'POST',
-        headers: { Authorization: 'Bearer ' + token },
-      });
-      const data = await r.json().catch(() => ({}));
-      status.textContent = r.ok ? '✅ ' + data.message : '❌ ' + (data.error || 'حصل خطأ');
-    } catch {
-      status.textContent = '❌ معرفتش أوصل للسيرفر';
-    }
-  });
+// زرار تحديث الموقع (أدمن)
+const API_BASE='https://programming-science.onrender.com';
+document.getElementById('redeployBtn').addEventListener('click', async () => {
+  const status=document.getElementById('redeployStatus');
+  status.textContent='جاري الإرسال...';
+  try {
+    // نستخدم Firebase ID token بدل ps_token القديم
+    const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+    const tok = await getAuth().currentUser?.getIdToken();
+    const r=await fetch(API_BASE+'/api/admin/redeploy',{method:'POST',headers:{Authorization:'Bearer '+(tok||'')}});
+    const d=await r.json().catch(()=>({}));
+    status.textContent=r.ok?'✅ '+d.message:'❌ '+(d.error||'حصل خطأ');
+  } catch { status.textContent='❌ معرفتش أوصل للسيرفر'; }
+});
 </script>
 <script src="assets/js/index.js"></script>
 

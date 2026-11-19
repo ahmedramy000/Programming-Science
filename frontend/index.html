@@ -57,6 +57,8 @@
 
   .note{margin-top:16px; font-size:10px; color:#0a7a4d; line-height:1.7; border-top:1px solid var(--green-dim); padding-top:10px;}
   .formerr{font-size:11px; color:#ff6666; min-height:14px; margin-bottom:4px;}
+  .btn-google{width:100%;padding:11px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:14px;font-family:inherit;margin-bottom:10px;}
+  .btn-google:hover{border-color:var(--accent);}
 </style>
 </head>
 <body>
@@ -93,123 +95,78 @@
   <a class="skip" href="home.html">تخطي ← الدخول كزائر</a>
 </div>
 
-<script>
-// شاشة إقلاع نصية بسيطة (ديكور بس)
-const bootLines = [
-  "booting elom-elbarmaga-os v2.0 ...",
-  "mounting /courses /cyber /book ...",
-  "checking credentials module ... offline (soon)",
-  "ready.",
-];
-const bootEl = document.getElementById('boot');
-let li = 0;
-function typeLine(){
-  if (li >= bootLines.length) { bootEl.innerHTML += '<span class="cur"></span>'; return; }
-  const line = bootLines[li++];
-  const row = document.createElement('div');
-  bootEl.appendChild(row);
-  let ci = 0;
-  const t = setInterval(() => {
-    row.textContent = line.slice(0, ci++);
-    if (ci > line.length) { clearInterval(t); setTimeout(typeLine, 120); }
-  }, 14);
-}
-typeLine();
+<script type="module">
+import { fbSignup, fbLogin, fbLoginGoogle, fbLogout, fbOnAuthChange } from './assets/js/firebase-init.js';
 
-// مطر رقمي خفيف في الخلفية
-const canvas = document.getElementById('rain');
-const ctx = canvas.getContext('2d');
-function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
-resize(); addEventListener('resize', resize);
-const cols = Math.floor(innerWidth / 16);
-const drops = new Array(cols).fill(0);
-const chars = "01アイウエオカキクケコ$#%&01010101";
-function draw(){
-  ctx.fillStyle = 'rgba(4,7,5,0.12)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#00ff8c';
-  ctx.font = '13px monospace';
-  drops.forEach((y, i) => {
-    const ch = chars[Math.floor(Math.random() * chars.length)];
-    ctx.fillText(ch, i * 16, y);
-    if (y > canvas.height && Math.random() > 0.975) drops[i] = 0;
-    else drops[i] = y + 16;
-  });
-}
-setInterval(draw, 55);
-
-// API_BASE فاضي يعني "نفس الدومين" (لو الباك إند بيعمل serve للـ frontend زي render.yaml).
-// لو الفرونت إند منشور لوحده (زي Vercel) وحطيت الباك إند على دومين تاني، حط رابطه هنا.
 const API_BASE = 'https://programming-science.onrender.com';
+const formErr  = document.getElementById('formErr');
+
+// لو مسجّل دخول بالفعل → روح الرئيسية
+fbOnAuthChange((user) => {
+  if (user) {
+    localStorage.setItem('ps_user', JSON.stringify(user));
+    location.replace('home.html');
+  } else {
+    localStorage.removeItem('ps_user');
+    formErr.textContent = '';
+  }
+});
 
 let signupMode = false;
-const nameField = document.getElementById('nameField');
-const ageField = document.getElementById('ageField');
-const goBtn = document.getElementById('goBtn');
-const toggleMode = document.getElementById('toggleMode');
-const formErr = document.getElementById('formErr');
+const nameField    = document.getElementById('nameField');
+const switchBtn    = document.getElementById('switchBtn');
+const switchMsg    = document.getElementById('switchMsg');
+const googleBtn    = document.getElementById('googleBtn');
 
-// لو أنت مسجّل دخول من قبل، متطلبش منك تسجل تاني: بنتأكد من الجلسة وندخلك على طول
-(async function autoLogin() {
-  const tok = localStorage.getItem('ps_token');
-  if (!tok || new URLSearchParams(location.search).has('stay')) return;
-  formErr.textContent = '⏳ بنتأكد من حسابك...';
-  try {
-    const r = await fetch(API_BASE + '/api/auth/me', {
-      headers: { Authorization: 'Bearer ' + tok }, signal: AbortSignal.timeout(7000),
-    });
-    if (r.status === 401) { // السيرفر مش عارف الجلسة دي (اتلغت فعلًا)
-      localStorage.removeItem('ps_token'); localStorage.removeItem('ps_user');
-      formErr.textContent = 'الجلسة انتهت، سجّل دخول تاني.';
-      return;
-    }
-  } catch { /* السيرفر نايم أو مفيش نت: فضّل مسجّل وادخل */ }
-  location.replace('home.html');
-})();
-
-toggleMode.addEventListener('click', (e) => {
-  e.preventDefault();
+switchBtn.addEventListener('click', () => {
   signupMode = !signupMode;
-  nameField.style.display = signupMode ? 'block' : 'none';
-  ageField.style.display = signupMode ? 'block' : 'none';
-  goBtn.textContent = signupMode ? '[ تسجيل ]' : '[ دخول ]';
-  toggleMode.textContent = signupMode ? 'عندك حساب؟ سجل دخول' : 'معندكش حساب؟ اعمل واحد جديد';
-  formErr.textContent = '';
+  nameField.style.display   = signupMode ? 'block' : 'none';
+  switchBtn.textContent     = signupMode ? '[ دخول ]' : '[ تسجيل ]';
+  switchMsg.textContent     = signupMode ? 'عندك حساب؟ سجل دخول' : 'معندكش حساب؟ اعمل واحد جديد';
 });
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  formErr.textContent = '';
-  goBtn.disabled = true;
-  const email = document.getElementById('email').value.trim();
-  const pass = document.getElementById('pass').value;
-  const path = signupMode ? '/api/auth/signup' : '/api/auth/login';
-  const body = signupMode
-    ? { full_name: document.getElementById('fullName').value.trim(), email, password: pass, age: document.getElementById('age').value }
-    : { email, password: pass };
-  formErr.textContent = '⏳ جاري الاتصال... لو السيرفر كان نايم ممكن ياخد لحد دقيقة';
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('pass').value;
+  const name     = document.getElementById('name')?.value?.trim() || '';
+  formErr.textContent = '⏳ جاري...';
   try {
-    const r = await fetch(API_BASE + path, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-      signal: AbortSignal.timeout(75000),
-    });
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(data.error || (r.status >= 500 ? 'السيرفر بيصحى أو مشغول، جرّب تاني بعد ثواني.' : 'حصل خطأ (' + r.status + ')'));
-    localStorage.setItem('ps_token', data.token);
-    localStorage.setItem('ps_user', JSON.stringify(data.user));
-    window.location.href = 'home.html';
-  } catch (err) {
-    formErr.textContent = (err.message === 'Failed to fetch' || err.name === 'TimeoutError' || err.name === 'AbortError')
-      ? 'مش قادر أوصل للسيرفر دلوقتي — جرّب "الدخول كزائر" تحت'
-      : err.message;
-  } finally {
-    goBtn.disabled = false;
+    const user = signupMode
+      ? await fbSignup(name || email, email, password)
+      : await fbLogin(email, password);
+    localStorage.setItem('ps_user', JSON.stringify(user));
+  } catch(e) {
+    const msgs = {
+      'auth/email-already-in-use': 'الإيميل ده مسجّل قبل كده',
+      'auth/wrong-password': 'كلمة المرور غلط',
+      'auth/user-not-found': 'مفيش حساب بالإيميل ده',
+      'auth/weak-password': 'كلمة المرور لازم تكون 6 حروف على الأقل',
+      'auth/invalid-email': 'الإيميل مش صح',
+      'auth/invalid-credential': 'الإيميل أو كلمة المرور غلط',
+      'auth/too-many-requests': 'محاولات كتير — جرّب بعد شوية',
+    };
+    formErr.textContent = msgs[e.code] || e.message;
   }
 });
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
-}
+// تسجيل دخول بـGoogle
+googleBtn && googleBtn.addEventListener('click', async () => {
+  formErr.textContent = '⏳ جاري...';
+  try {
+    const user = await fbLoginGoogle();
+    localStorage.setItem('ps_user', JSON.stringify(user));
+  } catch(e) {
+    formErr.textContent = e.code === 'auth/popup-closed-by-user' ? 'تم إغلاق نافذة Google' : e.message;
+  }
+});
+
+// دخول كزائر
+document.getElementById('guestBtn')?.addEventListener('click', () => {
+  localStorage.removeItem('ps_token');
+  localStorage.removeItem('ps_user');
+  location.href = 'home.html';
+});
 </script>
 
 </body>

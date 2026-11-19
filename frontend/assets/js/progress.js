@@ -262,6 +262,7 @@ window.PSProgress = {
     const cs = document.currentScript;
     if (!cs || !cs.src) return;
     const s = document.createElement('script');
+    s.type = 'module';
     s.src = cs.src.replace(/progress\.js(\?.*)?$/, 'account-sync.js');
     document.head.appendChild(s);
   } catch (e) { /* تجاهل */ }
